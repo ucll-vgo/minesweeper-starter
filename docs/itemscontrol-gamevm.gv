@@ -1,0 +1,26 @@
+digraph G {
+    node [shape=none,fontname=Consolas,margin="0.3,0.1"]
+    rankdir=LR
+
+    ItemsControl [
+      label =<<TABLE BORDER="2" CELLBORDER="0" CELLSPACING="1" CELLPADDING="5">
+                      <TR><TD PORT="header"><B><U>ItemsControl</U></B></TD></TR>
+                      <TR><TD PORT="DataContext">DataContext</TD></TR>
+                      <TR><TD PORT="ItemsSource">ItemsSource</TD></TR>
+                  </TABLE>>
+    ]
+
+    GameViewModel [
+      label =<<TABLE BORDER="2" CELLBORDER="0" CELLSPACING="1" CELLPADDING="5">
+                      <TR><TD PORT="header"><B><U>GameViewModel</U></B></TD></TR>
+                      <TR><TD PORT="Rows">Rows</TD></TR>
+                  </TABLE>>
+    ]
+
+    Data [label="IEnumerable\<IEnumerable\<Square\>\>",shape=box]
+
+
+    ItemsControl:DataContext -> GameViewModel:header
+    ItemsControl:ItemsSource -> GameViewModel:Rows
+    GameViewModel:Rows -> Data
+}

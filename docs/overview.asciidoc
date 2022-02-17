@@ -1,0 +1,26 @@
+// ROOT
+:tip-caption: 💡
+:note-caption: ℹ️
+:important-caption: ⚠️
+:task-caption: 🔨
+:source-highlighter: pygments
+:toc: left
+:toclevels: 3
+:experimental:
+:nofooter:
+
+# Overview
+
+[WARNING]
+====
+This documentation is subject to change.
+Make sure to check for updates.
+The documentation is included in the repository, meaning you can easily when changes are made (by subscribing as a watcher) and what they are (using `git log` and `git diff`).
+====
+
+For this project, you will develop a GUI for Minesweeper, a board game.
+
+* <<setup.asciidoc#,Setup Instructions>>
+* <<minesweeper-rules.asciidoc#,Game Rules>>
+* <<getting-started.asciidoc#,Getting Started>>
+* <<requirements.asciidoc#,Requirements>>

@@ -1,0 +1,29 @@
+// ROOT
+:tip-caption: 💡
+:note-caption: ℹ️
+:important-caption: ⚠️
+:task-caption: 🔨
+:source-highlighter: pygments
+:toc: left
+:toclevels: 3
+:experimental:
+:nofooter:
+
+# Minesweeper Rules
+
+In short, https://en.wikipedia.org/wiki/Minesweeper_(video_game)[Minesweeper]:
+
+* Its singleplayer.
+* It is played on a board divided into squares, typically 9&times;9, 16&times;16 or 30&times;16 large.
+* Each square can contain a bomb.
+* Each square shows how many bombs are in the 8 squares adjacent to it.
+* The player can mark a square that you suspect of containing a bomb.
+* The player uncovers the number or bomb when the square is clicked on.
+* You lose when you uncover a bomb.
+* You win when the whole board is uncovered except the mines.
+
+An optional rule introduced _flooding_:
+
+* When the player uncovers a square with 0 adjacent bombs, the board will uncover all adjacent squares recursively.
+
+You can play it online https://minesweeper.online/[here].

@@ -1,0 +1,18 @@
+digraph G {
+    node [shape=none,fontname=Consolas]
+    rankdir=LR
+
+    ItemsControl [
+      label =<<TABLE BORDER="2" CELLBORDER="0" CELLSPACING="1" CELLPADDING="5">
+                      <TR><TD PORT="header"><B><U>ItemsControl</U></B></TD></TR>
+                      <TR><TD PORT="DataContext">DataContext</TD></TR>
+                      <TR><TD PORT="ItemsSource">ItemsSource</TD></TR>
+                  </TABLE>>
+      shape = "none"
+    ]
+
+    Data [label="IEnumerable\<IEnumerable\<Square\>\>",shape=box]
+
+    ItemsControl:DataContext -> Data
+    ItemsControl:ItemsSource -> Data
+}

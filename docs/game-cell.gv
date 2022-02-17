@@ -1,0 +1,44 @@
+digraph G {
+    node [shape=none,fontname=Consolas,margin="0.3,0.1"]
+    rankdir=LR
+
+    GameViewModel [
+      label =<<TABLE BORDER="2" CELLBORDER="0" CELLSPACING="1" CELLPADDING="5">
+                      <TR><TD PORT="header"><B><U>GameViewModel</U></B></TD></TR>
+                      <TR><TD PORT="game">ICell&lt;IGame&gt;</TD></TR>
+                  </TABLE>>
+    ]
+
+    GameBoardViewModel [
+      label =<<TABLE BORDER="2" CELLBORDER="0" CELLSPACING="1" CELLPADDING="5">
+                      <TR><TD PORT="header"><B><U>GameBoardViewModel</U></B></TD></TR>
+                      <TR><TD PORT="Board">ICell&lt;IGameBoard&gt;</TD></TR>
+                  </TABLE>>
+    ]
+
+    BoardGameSquareViewModel1 [
+      label =<<TABLE BORDER="2" CELLBORDER="0" CELLSPACING="1" CELLPADDING="5">
+                      <TR><TD PORT="header"><B><U>GameBoardSquareViewModel</U></B></TD></TR>
+                      <TR><TD PORT="Square">ICell&lt;Square&gt;</TD></TR>
+                  </TABLE>>
+    ]
+
+    BoardGameSquareViewModel2 [
+      label =<<TABLE BORDER="2" CELLBORDER="0" CELLSPACING="1" CELLPADDING="5">
+                      <TR><TD PORT="header"><B><U>GameBoardSquareViewModel</U></B></TD></TR>
+                      <TR><TD PORT="Square">ICell&lt;Square&gt;</TD></TR>
+                  </TABLE>>
+    ]
+
+    BoardGameSquareViewModel3 [
+      label =<<TABLE BORDER="2" CELLBORDER="0" CELLSPACING="1" CELLPADDING="5">
+                      <TR><TD PORT="header"><B><U>GameBoardSquareViewModel</U></B></TD></TR>
+                      <TR><TD PORT="Square">ICell&lt;Square&gt;</TD></TR>
+                  </TABLE>>
+    ]
+
+    GameViewModel:game -> GameBoardViewModel:board
+    GameBoardViewModel:board -> BoardGameSquareViewModel1:Square
+    GameBoardViewModel:board -> BoardGameSquareViewModel2:Square
+    GameBoardViewModel:board -> BoardGameSquareViewModel3:Square
+}

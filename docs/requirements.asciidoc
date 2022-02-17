@@ -1,0 +1,252 @@
+// ROOT
+:tip-caption: 💡
+:note-caption: ℹ️
+:important-caption: ⚠️
+:task-caption: 🔨
+:source-highlighter: pygments
+:toc: left
+:toclevels: 3
+:experimental:
+:nofooter:
+
+= Requirements
+
+[IMPORTANT]
+====
+This is still work in progress.
+====
+
+== Minimal Requirements
+
+Failure to meet these requirements will inevitably lead to a failing grade.
+
+=== Minimal Functional Requirements
+
+. <<#crashes,No crashes>>
+. At least <<#screens,two screens>>
+.. Settings screen
+.. Play screen
+. Settings Screen
+.. Slider + TextBlock that allow to choose board size
+.. Min/max values of slides should be determined by model, not hardcoded in V or VM
+.. Checkbox that allows to enable flooding
+.. Button to start new game and switch to Play Screen
+. Play Screen
+.. Ability to uncover squares
+.. Ability to flag and unflag covered squares
+.. Only covered squares are interactable
+.. Uncovered squares show amount of adjacent bombs
+.. Uncovered squares with no adjacent bombs are blank
+.. Detection of game over
+.. Show bombs when game over
+.. Possibility of starting new game after game over
+. Decent GUI
+.. Game board <<#viewbox,fills>> the window
+.. Game board is centered
+. At least 3 <<#extensions,extensions>>
+. It must work using Visual Studio.
+  Realize that Rider does _not_ seem to produce VS-compatible projects.
+
+=== Implementation Requirements
+
+. The VM *must* be 100% independent of the V and WPF.
+  Check your <<#dependencies,project dependencies>>!
+. The M must remain independent of all other projects.
+. The V must receive all its data through bindings to the VM.
+. Do not deal with events (e.g., `Click`) in the code behind but rely on commands in the VM.
+. The VM/M must not make *any* View-related decisions.
+.. No brushes/colors/... are allowed in the VM. Colors should simply not exist in the VM (except of course if colors are inherent to the domain, but this is not the case for Minesweeper.)
+.. The VM must not contain strings that are shown in the V. Use enums instead.
+. <<#external-files,No hard coded absolute paths>>
+. No external libraries
+
+[WARNING]
+====
+Be very wary of strings exposed by the VM to the V!
+Students fail because they violate one of the requirements, and this violation often takes the form of a string that goes from VM to V.
+
+While there is technically nothing wrong in sending a string from VM to V, it can definitely be a violation of the rules:
+
+* If the string contains a message that is shown by the V, it is a violation.
+* If the string represents a color, it is a violation.
+
+So, if at some point the VM exposes a string to the V, think really hard about whether this is a safe thing to do.
+You might want to reconsider your approach.
+====
+
+[#extensions]
+== Extension Suggestions
+
+If an extension is implemented wrong, it will not be counted.
+We suggest to make some extra extensions as a safety measure.
+
+* In Play Screen, when mouse hovers over square, <<#disabled-buttons,it lights up>>. Note: the default highlight of ``Button``s does not count! Either change the highlight color or use something different than ``Button``s). This extension requires some code to be written.
+* After losing, highlight bombs and pressed bomb
+* Different color depending of amount of bombs adjacent
+* Choice between <<#themes,themes>> (e.g. dark and light theme)
+* <<#animation,Animation>> (NOT gifs, but WPF animations)
+* Timer
+* Let players choose colors in settings screen
+* User Defined WPF Control for squares
+* Highscore board
+* Hint button
+
+== Extra Information
+
+[#crashes]
+=== No Crashes
+
+The provided model classes throw exceptions when called inappropriately.
+For example, you cannot use the `PutStone` method once the game is over.
+Therefore, in order to prevent crashes, you will need to make sure the ViewModel only accesses Model members when it is valid to do so.
+
+[#screens]
+=== Screens
+
+By screens we mean that there is a *single window* whose entire contents can be switched out.
+A demo is available in the https://github.com/UCLeuvenLimburg/wpf-samples[Samples Repo].
+
+[#viewbox]
+=== ViewBox
+
+Look up https://docs.microsoft.com/en-us/dotnet/desktop/wpf/controls/viewbox[ViewBox] for an easy way to automatically scale your view.
+
+[#dependencies]
+=== Project dependencies
+
+In Visual Studio's Solution Explorer, you get a tree view of all your projects.
+Under each project, you can see its dependencies.
+It is of utmost importance that you get these right.
+
+* The View project
+** Framework dependencies: .NET Core and WPF.
+** Project dependencies: ViewModel (Cells and Model are "inherited" from ViewModel)
+* The ViewModel project
+** Framework dependencies: it can depend on .NET Core, but *not* on WPF.
+** Project dependencies: only Cells and Model are allowed.
+* The Model Project
+** Framework Project: .NET Core
+** Project dependencies: none
+
+[#external-files]
+=== External Files
+
+Your project should run without issues on other machines.
+Do not use any hardcoded absolute paths, since these will only work on _your_ machine.
+
+==== Separate Files
+
+If you wish to refer to external files, you should use relative paths.
+
+When using a relative path, e.g. `images/background.jpg`, your application starts looking starting at the location of the executable file, which is normally located somewhere under `bin/debug`.
+Do *not* move your external files there.
+Instead, place them in the project's root directory and have Visual Studio copy them to `bin/debug`.
+This can be done by right clicking on the external file in the Solution Explorer, picking properties, and then setting `Copy to Output Directory` to `Always`.
+
+==== Pack URIs
+
+Alternatively, you can also pack your external files into the executable file.
+You will need https://docs.microsoft.com/en-us/dotnet/desktop/wpf/app-development/pack-uris-in-wpf?view=netframeworkdesktop-4.8[pack URIs] to refer to them.
+
+[#animation]
+=== Animations
+
+* https://docs.microsoft.com/en-us/dotnet/desktop/wpf/graphics-multimedia/animation-overview[Official documentation]
+* A demo is available in the https://github.com/UCLeuvenLimburg/wpf-samples[Samples Repo].
+
+[#themes]
+=== Themes
+
+* A demo is available in the https://github.com/UCLeuvenLimburg/wpf-samples[Samples Repo].
+* https://michaelscodingspot.com/wpf-complete-guide-themes-skins/[Guide]
+* Since themes are View-specific and are implemented with almost nothing but WPF-specific code, you can deal with them purely in the View.
+  If buttons are involved, you do not have to use commands but can specify their behavior using `Click`.
+
+[#disabled-buttons]
+=== Disabled Buttons
+
+As mentioned in the requirements, you need to disable buttons when the square is uncovered.
+However, it appears that whenever a `Button` is disabled, you cannot choose its background color.
+This causes problems in the following cases:
+
+* Highlighting the button when the mouse hovers over it.
+* Highlighting bombs.
+
+There are multiple ways of solving this problem.
+Here, we present one using ``ControlTemplate``s.
+
+A `Button` has a default look and feel, but WPF allows you to customize its appearance.
+If only small cosmetic changes are necessary, you can rely on styles.
+However, it is also possible to rebuild a button from the ground up using https://docs.microsoft.com/en-us/dotnet/desktop/wpf/themes/how-to-create-apply-template[``ControlTemplate``s].
+
+[source,xml]
+----
+<Button>
+  <Button.Template>
+    <ControlTemplate TargetType="{x:Type Button}">
+      <Border Name="border" Background="Gray" BorderThickness="1" BorderBrush="Black">
+        <ContentPresenter />
+      </Border>
+    </ControlTemplate>
+  </Button.Template>
+  Hello world
+</Button>
+----
+
+In the example above, the `Button` will look like a rectangle with a gray background and a black thin border.
+Inside this rectangle, the contents of the `Button` will be placed, in our case, the text `Hello world`.
+Note that we gave the `Border` a name, i.e., `border`.
+This will come in handy later.
+
+A `ControlTemplate` allows you to define https://www.wpf-tutorial.com/styles/trigger-datatrigger-event-trigger/[_triggers_].
+A trigger is activated when a certain value changes to a certain value.
+For example, we can define a trigger that gets actived when the ``Button``'s ``IsMouseOver` property changes to `True`:
+
+[source,xml]
+----
+<Trigger Property="IsMouseOver" Value="True">
+  ...
+</Trigger>
+----
+
+You can then define what should happen when the trigger activates:
+
+[source,xml]
+----
+<Trigger Property="IsMouseOver" Value="True">
+  <Setter TargetName="border" Property="BorderBrush" Value="Red" >
+</Trigger>
+----
+
+This code will cause the border of the button to turn red whenever the mouse hovers over it.
+This trigger needs to be defined as part of the `ControlTemplate` as follows:
+
+[source,xml]
+----
+<Button>
+  <Button.Template>
+    <ControlTemplate TargetType="{x:Type Button}">
+      <Border Name="border" Background="Gray" BorderThickness="1" BorderBrush="Black">
+        <ContentPresenter />
+      </Border>
+      <ControlTemplate.Triggers>
+        <Trigger Property="IsMouseOver" Value="True">
+          <Setter TargetName="border" Property="BorderBrush" Value="Red" >
+        </Trigger>
+      </ControlTemplate.Triggers>
+    </ControlTemplate>
+  </Button.Template>
+  Hello world
+</Button>
+----
+
+There are multiple types of triggers:
+
+* `Trigger`: use these to affect the control's appearance based on its own state.
+  In other words, the properties (such as `IsMouseOver` in our example) are taken from the control itself (i.e., the `Button`).
+  https://docs.microsoft.com/en-us/dotnet/api/system.windows.controls.button[Other examples] of properties that triggers can work with are `IsPressed`, `IsVisible`, `IsFocused`, `IsEnabled`, etc.
+* `DataTrigger`: these get their data from the `DataContext`.
+  For example, you can change the `Background` based on some property in the ``Button``'s associated View Model.
+* `EventTrigger`: activate when a certain event occurs, such as `DragEnter`, `DragLeave`, `Drop`, `Click`, etc.
+
+A few demos are available in the https://github.com/UCLeuvenLimburg/wpf-samples[Samples Repo].
