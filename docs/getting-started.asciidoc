@@ -923,7 +923,7 @@ Next step is to have the ``Ellipse``'s `Fill` and ``TextBlock``'s `Text` vary ac
 
 To convert from `Square` to `Brush` and `string`, we need to create an `IValueConverter`. But `IValueConverter` only accepts one input while we require atleast two arguments: the state of the square and the amount of adjacent mines. We also can not give Square itself as input since it doesn't have these properties. Instead we can use a `wrapper` class that exposes these 2 values as properties and pass an instance of that class to the converter.
 
-[source,csharp,highlight=10]
+[source,csharp]
 ----
 public class SquareWrapper()
 {
