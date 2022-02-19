@@ -1,0 +1,40 @@
+// ROOT
+:tip-caption: 💡
+:note-caption: ℹ️
+:important-caption: ⚠️
+:task-caption: 🔨
+:source-highlighter: pygments
+:toc: left
+:toclevels: 3
+:experimental:
+:nofooter:
+
+# Avalonia Differences with WPF (a growing list)
+
+[.center,cols="^,^,^",options="header",width="100%"]
+|===
+| Desc | WPF | Avalonia
+| Control Naming | x:Name | Name
+| Named controls binding |  Generated from xaml into the connected cs file | Get named control with the method `this.FindControl<T>("name")``
+| ItemsControl value | ItemsControl.ItemsSource | ItemsControl.Items
+| Converters to Brush with string properties | Automatic string to brush conversion | Requires manual Brush.Parse(name) in converter
+| Style definitions in Control | Goes in Control.Resources | Goes in Control.Styles
+| Mouse Gestures | InputBinding command in xaml | (Hack) Bind with PointerPressed in MainWindow.axaml.cs, example below
+|===
+
+Right mouse button hack in MainWindow.axaml.cs (This is not allowed in WPF)
+
+[source,csharp]
+----
+public void ButtonPressed(object sender, PointerPressedEventArgs e)
+{
+	if (sender is Button button && e.GetCurrentPoint(this).Properties.IsRightButtonPressed)
+	{
+		if (button.DataContext is GameBoardSquareViewModel context)
+		{
+			if (context.FlagSquare.CanExecute(sender))
+				context.FlagSquare.Execute(sender);
+		}
+	}
+}
+----

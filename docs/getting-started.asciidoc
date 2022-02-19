@@ -898,7 +898,7 @@ In `MainWindow.xaml`, change the button to
 ----
 <Button Width="32" Height="32" Command="{Binding UncoverSquare}">
     <Grid Width="24" Height="24">
-        <Ellipse Stroke="red"/>
+        <Ellipse Fill="red"/>
         <TextBlock HorizontalAlignment="Center" Text="0" TextAlignment="Center" VerticalAlignment="Center"/>
     </Grid>
 </Button>
@@ -985,7 +985,7 @@ In `MainWindow.xaml`:
       ...
   </Window>
 ----
-* Bind `Stroke` to the `DataContext` itself.
+* Bind `Fill` to the `DataContext` itself.
   Have it https://docs.microsoft.com/en-us/dotnet/desktop/wpf/advanced/staticresource-markup-extension[use] `squareToBrushConverter` as converter.
 
 Run your code.
