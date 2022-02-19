@@ -743,7 +743,7 @@ Say we visit there:
 
 [source,csharp]
 ----
-// Black's turn
+// Uncovering a square
 currentGame.Value = currentGame.Value.UncoverSquare( new Vector2D(0, 0) );
 ----
 
@@ -781,12 +781,12 @@ It is now time for you to introduce cells in your code.
 ** Its constructor should now receive an `ICell<IGame>`.
 * `GameBoardSquareViewModel`
 ** The constructor receives an `ICell<IGame>`.
-** Change the `Square` property's type to `ICell<Square>`.
+** Change the `Square` property's type to `ICell<string>` by using the ToString() method while deriving.
 ** In the constructor, initialize it to a derived cell that contains the `Square` at the appropriate position.
 * `UncoverSquareCommand`
 ** Its constructor should also receive the `ICell<IGame>` and store it in a field.
 * XAML code
-** Update the `Fill` binding. Since we upgraded property `Square` from type `Square` to `ICell<Square>`, the binding needs to change from `Square` to `Square.Value`.
+** Update the `Content` binding. Since we upgraded property `Square` from type `Square` to `ICell<string>`, the binding needs to change from `Square` to `Square.Value`.
 
 Run your code and check that everything still works the same.
 ====
@@ -885,10 +885,10 @@ Right now, we draw each square using
 
 [source,xml]
 ----
-<Button Content="{Binding Square}" Width="32" Height="32" />
+<Button Content="{Binding Square.Value}" Width="32" Height="32" />
 ----
 
-In other words, we tell the `Button` that its contents are equal to its `DataContext`, which itself is equal to a `Square`. But WPF is using the `ToString()` method to fill in the text, and per requirements strings passed from Model or ViewModel are not allowed. So lets draw something from Square ourselves.
+In other words, we tell the `Button` that its contents are equal to its `DataContext`, which itself is equal to a `string`. But we're setting this using the `ToString()` method to fill in the text from the ViewModel, and per requirements strings passed from Model or ViewModel are not allowed. So lets draw something starting from Square ourselves.
 
 [NOTE,caption={task-caption}]
 ====
@@ -896,10 +896,11 @@ In `MainWindow.xaml`, change the button to
 
 [source,xml]
 ----
-<Button Width="32" Height="32">
-    <Ellipse Width="24" Height="24" Fill="Red">
-        <TextBlock Text="0" />
-    </Ellipse>
+<Button Width="32" Height="32" Command="{Binding UncoverSquare}">
+    <Grid Width="24" Height="24">
+        <Ellipse Stroke="red"/>
+        <TextBlock HorizontalAlignment="Center" Text="0" TextAlignment="Center" VerticalAlignment="Center"/>
+    </Grid>
 </Button>
 ----
 
@@ -920,7 +921,7 @@ Next step is to have the ``Ellipse``'s `Fill` and ``TextBlock``'s `Text` vary ac
 | Mine (& uncovered) | Black | None
 |===
 
-To convert from `Square` to `Brush`, we need to create an `IValueConverter`. But `IValueConverter` only accepts one input while we require atleast two arguments: the state of the square and the amount of adjacent mines. We also can not give Square itself as input since it doesn't expose these properties. Instead we can use a `wrapper` class that exposes these 2 values as properties and pass an instance of that class to the converter.
+To convert from `Square` to `Brush` and `string`, we need to create an `IValueConverter`. But `IValueConverter` only accepts one input while we require atleast two arguments: the state of the square and the amount of adjacent mines. We also can not give Square itself as input since it doesn't have these properties. Instead we can use a `wrapper` class that exposes these 2 values as properties and pass an instance of that class to the converter.
 
 [source,csharp,highlight=10]
 ----
@@ -932,20 +933,17 @@ public class SquareWrapper()
 
     public int AdjacentMines { get; }
 
-    public SquareWrapper(IGame game, int row, int column)
+    public SquareWrapper(IGame game, Vector2D position)
     {
-        var position = new Vector2D(row, column);
-        IsCovered = game.IsSquareCovered(position);
-        IsMine = game.IsGameOver && game.Mines.Contains(position);
-        IsFlagged = game.Flags.Contains(position);
-        AdjacentMines = g.Board[new Vector2D(row, column)].AmountOfMinesNear;
+        ...
     }
 }
 ----
 
 [NOTE,caption={task-caption}]
 ====
-* In GameBoardSquareViewModel, change the type of property Square from `ICel<Square>` to `ICel<SquareWrapper>`
+* Implement SquareWrapper in the ViewModel project using functions from IGame. Handle functions that throw errors properly without try-catch.
+* In GameBoardSquareViewModel, change the type of property Square from `ICell<string>` to `ICell<SquareWrapper>`
 * Add a new folder named `Converters` to your View project.
 * Add a new class file named `SquareColorConverter.cs` to this folder.
 * Have `SquareColorConverter` implement `IValueConverter`, i.e., have Visual Studio generate stubs.
@@ -987,11 +985,11 @@ In `MainWindow.xaml`:
       ...
   </Window>
 ----
-* Bind `Fill` to the `DataContext` itself.
+* Bind `Stroke` to the `DataContext` itself.
   Have it https://docs.microsoft.com/en-us/dotnet/desktop/wpf/advanced/staticresource-markup-extension[use] `squareToBrushConverter` as converter.
 
 Run your code.
-If you did everything correctly, you should see circles with the correct color.
+If you did everything correctly, you will see 0's everywhere but if you hit a mine, the mines will appear as circles.
 ====
 
 === Generalizing SquareColorConverter
@@ -1009,10 +1007,10 @@ So let us improve our `SquareColorConverter`.
 ====
 In `SquareColorConverter`:
 
-* Add three properties `Covered`, `Uncovered`, `Flagged` and `Mine`. Each has type `object` and has both a getter and setter.
+* Add four properties `Covered`, `Uncovered`, `Flagged` and `Mine`. Each has type `object` and has both a getter and setter.
 * In the `Convert` method, return the values of `Covered`, `Uncovered`, `Flagged` and `Mine` instead of hardcoded brushes.
 
-In `MainWindow.xaml`, initialize the three properties of the `SquareColorConverter`.
+In `MainWindow.xaml`, initialize the four properties of the `SquareColorConverter`.
 [source,diff]
 ----
   <Window ...>
@@ -1028,7 +1026,36 @@ In `MainWindow.xaml`, initialize the three properties of the `SquareColorConvert
   </Window>
 ----
 
-* Create a second converter `SquareTextConverter` to fill in the `Text` of `TextBlock`.
+* Create a second converter `SquareTextConverter` to fill in the `Text` of `TextBlock` so that it only shows adjacent mines when uncovered.
 ====
 
 Run your code and check that everything works as intended.
+
+== Flagging Squares
+
+Now we got most of Minesweeper core functionalities working, we're still missing flags.
+In Minesweeper, it is the tradition to flag a square using the right mouse button, for that we'll need to add an InputBinding to the button.
+
+[source,xml]
+----
+<Button Width="32" Height="32" Command="{Binding UncoverSquare}">
+    <Grid Width="24" Height="24">
+        <Button.InputBindings>
+            <MouseBinding Gesture="RightClick" Command="{Binding FlagSquare}" />
+        </Button.InputBindings>
+        ...
+    </Grid>
+</Button>
+----
+
+
+[NOTE,caption={task-caption}]
+====
+* Add the gesture RightClick to the button's InputBindings as above
+* Implement the FlagSquare command, the method `IGame.FlagSquare` acts as a toggle: use the same method to turn it `on` and `off`.
+====
+
+Run your code and check that flags are working.
+
+The guide ends here but you are not at the project minimum requirements just yet.
+Head over to the <<requirements.asciidoc#,Requirements>> page to see what more you can do.
