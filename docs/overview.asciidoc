@@ -24,3 +24,4 @@ For this project, you will develop a GUI for Minesweeper, a board game.
 * <<minesweeper-rules.asciidoc#,Game Rules>>
 * <<getting-started.asciidoc#,Getting Started>>
 * <<requirements.asciidoc#,Requirements>>
+* <<avalonia.asciidoc#,Avalonia Info>>
