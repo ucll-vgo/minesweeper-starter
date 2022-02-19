@@ -9,7 +9,7 @@ namespace Model.MineSweeper
     {
         private readonly Grid<Square> _board;
 
-        public const int MinimumSize = 8;
+        public const int MinimumSize = 6;
 
         public const int MaximumSize = 20;
 

@@ -33,7 +33,7 @@
 
         public override string ToString()
         {
-            return !IsCovered ? "" : IsFlagged ? "F" : IsMine ? "B" : AmountOfMinesNear.ToString();
+            return IsCovered ? "" : IsFlagged ? "F" : IsMine ? "B" : AmountOfMinesNear.ToString();
         }
     }
 }
