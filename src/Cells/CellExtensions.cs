@@ -4,11 +4,11 @@ namespace Cells
 {
     public static class CellExtensions
     {
-        public static IReactiveCell<TResult> Derive<T, TResult>(this IReactiveCell<T> cell, Func<T, TResult> func) => 
-            ReactiveCell.Derived(cell, func);
+        public static ICell<TResult> Derive<T, TResult>(this ICell<T> cell, Func<T, TResult> func) => 
+            Cell.Derived(cell, func);
 
-        public static IReactiveCell<bool> Negate(this IReactiveCell<bool> cell) => cell.Derive(x => !x);
+        public static ICell<bool> Negate(this ICell<bool> cell) => cell.Derive(x => !x);
 
-        public static void Update<T>(this IReactiveCell<T> cell, Func<T, T> updater) => cell.Value = updater(cell.Value);
+        public static void Update<T>(this ICell<T> cell, Func<T, T> updater) => cell.Value = updater(cell.Value);
     }
 }

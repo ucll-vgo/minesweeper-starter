@@ -2,7 +2,7 @@
 
 namespace Cells
 {
-    public interface IReactiveCell<T> : IVar<T>, IEquatable<IReactiveCell<T>>
+    public interface ICell<T> : IVar<T>, IEquatable<ICell<T>>
     {
         public event Action ValueChanged;
 

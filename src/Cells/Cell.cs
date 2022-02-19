@@ -3,7 +3,7 @@ using System.ComponentModel;
 
 namespace Cells
 {
-    internal abstract class Cell<T> : IReactiveCell<T>, INotifyPropertyChanged
+    internal abstract class Cell<T> : ICell<T>, INotifyPropertyChanged
     {
         public abstract T Value { get; set; }
 
@@ -18,9 +18,9 @@ namespace Cells
         protected void NotifyObservers() =>
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs( "Value" ));
 
-        public override bool Equals(object? obj) => Equals(obj as IReactiveCell<T>);
+        public override bool Equals(object? obj) => Equals(obj as ICell<T>);
 
-        public bool Equals(IReactiveCell<T>? that)
+        public bool Equals(ICell<T>? that)
         {
             if (that == null)  return false;
             else if (Value == null) return that.Value == null;
