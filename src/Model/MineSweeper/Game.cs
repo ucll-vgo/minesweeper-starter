@@ -100,7 +100,7 @@ namespace Model.MineSweeper
         /// <summary>
         /// Change of a mine appearing.
         /// </summary>
-        public const double ChanceOfMine = 0.1;
+        public const double ChanceOfMine = 0.2;
     }
 
     /// <summary>
