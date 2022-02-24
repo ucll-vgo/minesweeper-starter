@@ -22,8 +22,8 @@ This will allow you to experiment with an easy mind: if things go wrong, you can
 [NOTE,caption={task-caption}]
 ====
 * Open the Minesweeper solution in Visual Studio by opening the solution file `Minesweeper.sln`.
-* Add a new "Class Library (.NET Core)" to the solution (in the Solution Explorer, right click on the solution at the root of the tree, choose Add &rarr; New Project). Name this project `ViewModel`.
-* Add a new "WPF App (.NET)" to the solution. Name it `View`.
+* Add a new "Class Library" (be sure to pick the one that targets .NET Core) to the solution (in the Solution Explorer, right click on the solution at the root of the tree, choose Add &rarr; New Project). Name this project `ViewModel`.
+* Add a new "WPF Application" (again the one targeting .NET Core) to the solution. Name it `View`.
 * In the Solution Explorer, right click on `View` and select Set as Startup Project.
 ====
 
