@@ -53,5 +53,5 @@ $ git pull upstream master
 [IMPORTANT]
 ====
 It is your responsibility to download updates as they become available.
-You can ask GitHub to notify you whenever an update is made to the repository using the watch functionality (top right corner) provided on the https://github.com/ucll-vgo/gomoku-starter[repository's website].
+You can ask GitHub to notify you whenever an update is made to the repository using the watch functionality (top right corner) provided on the https://github.com/ucll-vgo/minesweeper-starter[repository's website].
 ====
