@@ -1,6 +1,38 @@
 require 'fileutils'
 require 'pathname'
+require 'webrick'
 require 'find'
+
+
+module Server
+    class NonCachingFileHandler < WEBrick::HTTPServlet::FileHandler
+      def initialize(server, root, options={}, default=WEBrick::Config::FileHandler)
+        super(server, root, { **options, :FancyIndexing => true }, default)
+      end
+
+      def prevent_caching(res)
+        res['ETag']          = nil
+        res['Last-Modified'] = Time.now + 100**4
+        res['Cache-Control'] = 'no-store, no-cache, must-revalidate, post-check=0, pre-check=0'
+        res['Pragma']        = 'no-cache'
+        res['Expires']       = Time.now - 100**4
+      end
+
+      def do_GET(req, res)
+        super
+        prevent_caching(res)
+      end
+    end
+
+
+    def self.serve_dist
+      server = WEBrick::HTTPServer.new :Port => 8000
+      server.mount '/', NonCachingFileHandler , 'dist'
+      trap 'INT' do server.shutdown end
+      server.start
+    end
+  end
+
 
 
 def is_root?(filename)
@@ -71,3 +103,8 @@ task :default => [ "build:all" ]
 
 desc 'Does the whole shebang including uploading'
 task :full => [ :clean, 'build:all', :upload ]
+
+desc 'Serves on localhost:8000'
+task :serve do
+    Server::serve_dist
+end
