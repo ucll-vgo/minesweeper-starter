@@ -252,9 +252,8 @@ Now comes the tricky part: we need to visualize this grid.
 * Have this inner `ItemsPanel` arrange its items *horizontally*.
 * Have its `ItemTemplate` be a `Button`.
 * For now, set this ``Button``'s `Content` to simply `x`.
-* Lastly, we must set the inner ``ItemControl``'s `ItemsSource`.
-  We know that the outer `ItemsControl` has set its `DataContext` to a row, i.e., a `List<string>`.
-  So, we should simply bind the inner ``ItemControl``'s `ItemsSource` to this `DataContext`: `ItemsSource={Binding .}`.
+* Lastly, we must set the inner ``ItemControl``'s `ItemsSource`, which we want to be bound to a single row.
+  We know that the outer `ItemsControl` has set its `DataContext` to a row, i.e., a `List<string>`, so the binding simply has to take over the ``DataContext``'s value.
 
 Run your code.
 You should see a 3 rows of 5 buttons, all labeled `x`.
