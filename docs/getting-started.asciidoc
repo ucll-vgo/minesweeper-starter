@@ -282,7 +282,7 @@ Currently, we have defined our own grid data.
 In this section, we will start relying on domain classes.
 Let's explore these for a bit.
 
-A game is by an object implementing the `IGame` interface.
+A game is represented by an object implementing the `IGame` interface.
 This interface contains all Minesweeper-related functionality.
 To create a game, `IGame` offers a static factory method:
 
