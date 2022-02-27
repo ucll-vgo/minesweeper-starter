@@ -83,7 +83,7 @@ We start off by using an `ItemsControl` in the simplest possible way.
 ====
 * In `MainWindow.xaml`, add an `ItemsControl` inside the `Grid.
 * Give it a name using the `x:Name` property, e.g., `boardView`.
-* In `MainWindow.xaml.cs`, create a `List<string>` with some strings in it:
+* In `MainWindow.xaml.cs`, in ``MainWindow``'s constructor after `InitializeComponent()`, create a `List<string>` with some strings in it:
 +
 [source,csharp]
 ----
