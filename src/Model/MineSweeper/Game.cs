@@ -5,6 +5,16 @@ using System.Collections.Generic;
 namespace Model.MineSweeper
 {
     /// <summary>
+    /// Represents the different statuses a game can have.
+    /// </summary>
+    public enum GameStatus
+    {
+        InProgress,
+        Won,
+        Lost
+    }
+
+    /// <summary>
     /// Represents a game of Mine Sweeper.
     /// Objects of this type are immutable.
     /// </summary>
@@ -17,9 +27,11 @@ namespace Model.MineSweeper
         /// <param name="flooding">Whether or not flooding is enabled.</param>
         /// <param name="seed">The seed for randomly generating mines. Entering null will generate a random seed.</param>
         /// <returns></returns>
-        public static IGame CreateRandom(int boardSize, bool flooding = true, int? seed = null)
+        public static IGame CreateRandom(int boardSize, double mineProbability, bool flooding = true, int? seed = null)
         {
-            return new InProgressGame(boardSize, flooding, seed ?? new Random().Next() );
+            var board = GameBoard.CreateRandom( boardSize, boardSize, seed ?? new Random().Next(), mineProbability );
+
+            return new InProgressGame(board, flooding);
         }
 
         public static IGame Parse(IEnumerable<string> rows, bool flooding=true)
@@ -35,14 +47,9 @@ namespace Model.MineSweeper
         IGameBoard Board { get; }
 
         /// <summary>
-        /// Returns true if the game is over, false otherwise.
+        /// Returns the game's status. A game is either in progress, won or lost.
         /// </summary>
-        bool IsGameOver { get; }
-
-        /// <summary>
-        /// If the game is over and a mine was hit, returns the position of the mine. Returns null otherwise.
-        /// </summary>
-        Vector2D MineHit { get; }
+        GameStatus Status { get; }
 
         /// <summary>
         /// Uncovers a square of the board.
@@ -97,11 +104,6 @@ namespace Model.MineSweeper
         /// Maximum board size.
         /// </summary>
         public const int MaximumBoardSize = GameBoard.MaximumSize;
-
-        /// <summary>
-        /// Change of a mine appearing.
-        /// </summary>
-        public const double ChanceOfMine = 0.2;
     }
 
     /// <summary>
@@ -139,9 +141,7 @@ namespace Model.MineSweeper
 
         public GameBoard Board { get; }
 
-        public abstract bool IsGameOver { get; }
-
-        public abstract Vector2D MineHit { get; }
+        public abstract GameStatus Status { get; }
 
         public abstract IGame UncoverSquare(Vector2D position);
 
@@ -166,15 +166,12 @@ namespace Model.MineSweeper
     {
         private bool isFloodingEnabled;
 
-        public InProgressGame(int boardSize, bool flooding, int seed)
-            : this(GameBoard.CreateRandom(boardSize, boardSize, seed, IGame.ChanceOfMine), flooding) { }
-
         public InProgressGame(GameBoard gameBoard, bool flooding) : base(gameBoard)
         {
             isFloodingEnabled = flooding;
         }
 
-        public override bool IsGameOver => false;
+        public override GameStatus Status => GameStatus.InProgress;
 
         public override IGame UncoverSquare(Vector2D position)
         {
@@ -190,7 +187,7 @@ namespace Model.MineSweeper
 
             if ( square.IsMine )
             {
-                return new FinishedGame( position, nextBoard );
+                return new LostGame( nextBoard );
             }
 
             if ( isFloodingEnabled )
@@ -200,7 +197,7 @@ namespace Model.MineSweeper
 
             if ( nextBoard.AreAllBomblessSquaresUncovered )
             {
-                return new FinishedGame( null, nextBoard );
+                return new WonGame( nextBoard );
             }
             else
             {
@@ -218,26 +215,40 @@ namespace Model.MineSweeper
             return new InProgressGame(nextBoard, isFloodingEnabled);
         }
 
-        public override Vector2D MineHit => null;
-
         public override ISet<Vector2D> Mines => throw new InvalidOperationException("Game is not over yet");
     }
 
-    internal class FinishedGame : Game
+    internal abstract class FinishedGame : Game
     {
-        public FinishedGame(Vector2D mine, GameBoard gameBoard) : base(gameBoard)
+        public FinishedGame(GameBoard gameBoard) : base(gameBoard)
         {
-            MineHit = mine;
+            // NOP
         }
-
-        public override bool IsGameOver => true;
-
-        public override Vector2D MineHit { get; }
 
         public override ISet<Vector2D> Mines => Board.Mines;
 
         public override IGame UncoverSquare(Vector2D position) => throw new InvalidOperationException("Game finished");
 
         public override IGame FlagSquare(Vector2D position) => throw new InvalidOperationException("Game finished");
+    }
+
+    internal class WonGame : FinishedGame
+    {
+        public WonGame(GameBoard gameBoard) : base(gameBoard)
+        {
+            // NOP
+        }
+
+        public override GameStatus Status => GameStatus.Won;
+    }
+
+    internal class LostGame : FinishedGame
+    {
+        public LostGame( GameBoard gameBoard ) : base( gameBoard )
+        {
+            // NOP
+        }
+
+        public override GameStatus Status => GameStatus.Lost;
     }
 }
