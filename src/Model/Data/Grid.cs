@@ -53,6 +53,14 @@ namespace Model.Data
 
         public IEnumerable<Vector2D> Positions =>
             Enumerable.Range(0, Height).SelectMany(y => Enumerable.Range(0, Width).Select(x => new Vector2D(x, y)));
+
+        public Grid<U> Map<U>( Func<T, U> mapper ) => new Grid<U>( this.Width, this.Height, p => mapper( this[p] ) );
+
+        public Grid<U> Map<U>( Func<Vector2D, T, U> mapper ) => new Grid<U>( this.Width, this.Height, p => mapper( p, this[p] ) );
+
+        public IEnumerable<Vector2D> Around( Vector2D position ) => Vector2D.AllDirections.Select( dp => position + dp ).Where( IsValidPosition );
+
+        public IEnumerable<T> Items => Positions.Select( p => this[p] );
     }
 
     internal class GridSlice<T>

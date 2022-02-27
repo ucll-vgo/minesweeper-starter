@@ -17,15 +17,16 @@ namespace Model.MineSweeper
         /// <param name="flooding">Whether or not flooding is enabled.</param>
         /// <param name="seed">The seed for randomly generating mines. Entering null will generate a random seed.</param>
         /// <returns></returns>
-        public static IGame Create(int boardSize, bool flooding = true, int? seed = null)
+        public static IGame CreateRandom(int boardSize, bool flooding = true, int? seed = null)
         {
-            if (!seed.HasValue)
-            {
-                var temp = new Random();
-                seed = temp.Next(int.MinValue, int.MaxValue);
-            }
+            return new InProgressGame(boardSize, flooding, seed ?? new Random().Next() );
+        }
 
-            return new InProgressGame(boardSize, flooding, seed.Value);
+        public static IGame Parse(IEnumerable<string> rows, bool flooding=true)
+        {
+            var board = GameBoard.Parse( rows );
+
+            return new InProgressGame( board, flooding );
         }
 
         /// <summary>
@@ -157,7 +158,7 @@ namespace Model.MineSweeper
             if (IsSquareCovered(position))
                 throw new InvalidOperationException("Square is still covered");
 
-            return Board[position].AmountOfMinesNear;
+            return Board[position].NeighboringMineCount;
         }
     }
 
@@ -165,9 +166,10 @@ namespace Model.MineSweeper
     {
         private bool isFloodingEnabled;
 
-        public InProgressGame(int boardSize, bool flooding, int seed) : this(new GameBoard(boardSize, boardSize, seed, IGame.ChanceOfMine), flooding) { }
+        public InProgressGame(int boardSize, bool flooding, int seed)
+            : this(GameBoard.CreateRandom(boardSize, boardSize, seed, IGame.ChanceOfMine), flooding) { }
 
-        private InProgressGame(GameBoard gameBoard, bool flooding) : base(gameBoard)
+        public InProgressGame(GameBoard gameBoard, bool flooding) : base(gameBoard)
         {
             isFloodingEnabled = flooding;
         }
@@ -176,22 +178,34 @@ namespace Model.MineSweeper
 
         public override IGame UncoverSquare(Vector2D position)
         {
-            if (!IsSquareCovered(position))
-                throw new InvalidOperationException("Square already uncovered");
+            if ( !IsSquareCovered( position ) )
+            {
+                throw new InvalidOperationException( "Square already uncovered" );
+            }
 
             var nextBoard = Board.Copy();
-            if (nextBoard[position].Uncover())
-                return new FinishedGame(position, nextBoard);
+            var square = nextBoard[position];
+            
+            square.Uncover();
 
-            if (isFloodingEnabled)
-                nextBoard.FloodSquares(position);
+            if ( square.IsMine )
+            {
+                return new FinishedGame( position, nextBoard );
+            }
 
-            var emptySquaresLeft = nextBoard.UncoveredEmptySquares;
+            if ( isFloodingEnabled )
+            {
+                nextBoard.FloodSquares( position );
+            }
 
-            if (emptySquaresLeft == 0)
-                return new FinishedGame(null, nextBoard);
-
-            return new InProgressGame(nextBoard, isFloodingEnabled);
+            if ( nextBoard.AreAllBomblessSquaresUncovered )
+            {
+                return new FinishedGame( null, nextBoard );
+            }
+            else
+            {
+                return new InProgressGame( nextBoard, isFloodingEnabled );
+            }
         }
 
         public override IGame FlagSquare(Vector2D position)

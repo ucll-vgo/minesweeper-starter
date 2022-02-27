@@ -5,25 +5,26 @@
     /// </summary>
     public class Square
     {
-        public int AmountOfMinesNear { get; }
+        public int NeighboringMineCount { get; }
 
-        internal bool IsMine { get; }
-        internal bool IsCovered { get; private set; }
-        internal bool IsFlagged { get; private set; }
+        public bool IsMine { get; }
 
-        internal Square(bool mine, int minesNear)
+        public bool IsCovered { get; private set; }
+
+        public bool IsFlagged { get; private set; }
+
+        internal Square(bool mine, int neighboringMineCount)
         {
             IsMine = mine;
             IsCovered = true;
             IsFlagged = false;
-            AmountOfMinesNear = minesNear;
+            NeighboringMineCount = neighboringMineCount;
         }
 
-        internal bool Uncover()
+        internal void Uncover()
         {
             IsCovered = false;
             IsFlagged = false;
-            return IsMine;
         }
 
         internal void ToggleFlag()
@@ -33,7 +34,7 @@
 
         public override string ToString()
         {
-            return IsCovered ? "?" : IsFlagged ? "F" : IsMine ? "B" : AmountOfMinesNear.ToString();
+            return IsCovered ? "?" : IsFlagged ? "F" : IsMine ? "B" : NeighboringMineCount.ToString();
         }
     }
 }
