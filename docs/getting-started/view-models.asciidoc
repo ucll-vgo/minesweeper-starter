@@ -76,7 +76,7 @@ In The ViewModel, introduce a class `GameViewModel`.
 We intend this class to contain all game related data.
 For now, we will simply have it expose the board so that the View can render its grid of buttons.
 
-* Have the constructor accept an `IGame` object and have it stored in a private field.
+* Have the constructor accept an `IGame` object and have it stored in a private readonly field.
 * The top level `ItemsControl` needs something to bind its `ItemsSource` on, so introduce a public `Rows` property.
   It must have type `IEnumerable<IEnumerable<Square>>`.
   It should be only gettable, not settable.
@@ -107,7 +107,7 @@ Everything should still work the same.
 
 === GameBoardViewModel
 
-Right now, the `GameViewModel` actually represents the board.
+Right now, we have to admit `GameViewModel` actually represents the board instead of the game itself.
 We would like to distinguish the game from its game board.
 Let's create a separate `GameBoardViewModel` class.
 
@@ -116,10 +116,15 @@ image::getting-started/itemscontrol-gamevm-boardvm.svg[Static,700,align="center"
 [NOTE,caption={task-caption}]
 ====
 In the ViewModel, introduce a class `GameBoardViewModel`.
+It should wrap an `IGameBoard` object.
 
-* The constructor expects a `IGameBoard` object, which it stores in a private field.
+* Add a private readonly field that holds an `IGameBoard` object.
+* The constructor should initialize it using a parameter.
 * Move the `Rows` property (and its helper methods, if any) from `GameViewModel` to `GameBoardViewModel`.
+====
 
+[NOTE,caption={task-caption}]
+====
 Update `GameViewModel`:
 
 * Introduce a public property `Board` of type `GameBoardViewModel`, getter-only.
@@ -130,50 +135,49 @@ Update `GameViewModel`:
 Do not have the `Board` getter create a new `GameBoardViewModel` each time.
 Make sure to create it only once, namely in the constructor, and have `Board` return it.
 =====
+====
 
-Lastly, update the `ItemsSource` binding:
-
-* It starts off in the `DataContext`, which is a `GameViewModel`.
-* The binding needs to first go to its `Board` property.
-  Then it must dig on step deeper to the board's `Rows` property.
+[NOTE,caption={task-caption}]
+====
+Lastly, in the XAML file, update the `ItemsSource` binding of the outer `ItemsControl`.
+Keep in mind that its `DataContext` is a `GameViewModel` and the binding needs to specify how to get to the information the `ItemsControl` needs.
+Know that a binding allows a chain of properties, e.g. `{Binding Foo.Bar.Qux}` digs three levels deep into the `DataContext`.
 
 Run it and check that nothing has changed.
 ====
 
-=== GameBoardRowViewModel
+=== RowViewModel
 
 Next in line is a ViewModel representing a board row.
 
 [NOTE,caption={task-caption}]
 ====
-Introduce a class `GameBoardRowViewModel`.
-
-* The constructor expects a `IEnumerable<Square>`.
-* The `IEnumerable<Square>` is exposed through a property named `Squares`.
-* Update the `Rows` property of `GameBoardViewModel`: instead of returning `IEnumerable<IEnumerable<Square>>`, it now returns a `IEnumerable<GameBoardRowViewModel>`.
-* Update the bindings of the inner ``ItemsControl``s.
-  Their `DataContext` has now changed from `IEnumerable<Square>` to `GameBoardRowViewModel`, so the binding will need to access the `Squares` property of its `DataContext`.
+* Introduce a class `RowViewModel`.
+  It should wrap an `IEnumerable<Square>` object, which it should expose using a property named `Squares`.
+* Update the `Rows` property of `GameBoardViewModel`: instead of returning `IEnumerable<IEnumerable<Square>>`, it should return a `IEnumerable<RowViewModel>`.
+* Update the bindings of the inner ``ItemsControl``s in the XAML file.
+  Their `DataContext` has now changed from `IEnumerable<Square>` to `RowViewModel`, so binding on the `DataContext` itself won't work anymore.
 
 Run it and check that nothing has changed.
 ====
 
 image::getting-started/itemscontrol-rowvm.svg[Static,700,align="center"]
 
-=== GameBoardSquareViewModel
+=== SquareViewModel
 
 Lastly, we want a ViewModel object for each square of the grid.
-We will call this `GameBoardSquareViewModel`.
+We will call this `SquareViewModel`.
 
 image::getting-started/itemscontrol-squarevm.svg[Static,700,align="center"]
 
 [NOTE,caption={task-caption}]
 ====
-Introduce a class `GameBoardSquareViewModel`.
+Introduce a class `SquareViewModel` and update the code so as to make use of it.
 
-* The constructor expects a `Square`.
-* The `Square` is exposed through a property named `Square`.
-* Update `GameBoardRowViewModel` so that `Squares` returns an `IEnumerable<GameBoardSquareViewModel>` instead of an `IEnumerable<Square>`.
-* Update the binding for ``Button``'s `Content` property.
+* `SquareViewModel` should wrap a `Square` object.
+* It should expose the data needed by the View.
+* `RowViewModel` should return an `IEnumerable<SquareViewModel>` instead of an `IEnumerable<Square>`.
+* Update the bindings for ``Button``'s content.
 
 Run it and check that nothing has changed.
 ====
