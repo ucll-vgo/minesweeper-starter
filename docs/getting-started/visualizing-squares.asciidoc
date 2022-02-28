@@ -103,7 +103,7 @@ Inside `MainWindow.xaml`, create a `SquareStatusConverter` and update ``Ellipse.
   For this we will first need to "import" it.
   Add a https://docs.microsoft.com/en-us/dotnet/desktop/wpf/advanced/xaml-namespaces-and-namespace-mapping-for-wpf-xaml?view=netframeworkdesktop-4.8[namespace declaration] to import `View.Converters` as `converters`.
   There should already be a namespace declaration that maps `local` to the namespace `View`; use it as guide.
-* Create a `SquareStatusConverter` as one of ``MainWindow``'s https://docs.microsoft.com/en-us/dotnet/desktop/wpf/systems/xaml-resources-overview?view=netdesktop-6.0[resources].
+* Create a `SquareStatusConverter` object as one of ``MainWindow``'s https://docs.microsoft.com/en-us/dotnet/desktop/wpf/systems/xaml-resources-overview?view=netdesktop-6.0[resources].
   Name it `squareStatusToEllipseFill` (using the `x:Key` property).
 * Set the ``Ellipse``'s `Fill` property to a `Binding` on `Status`.
   Have it use `squareStatusToEllipseFill` as a converter.
@@ -131,6 +131,131 @@ Given a `SquareStatus` (through its first parameter) it should convert it to a `
 * Its first parameter `value` should be cast to `SquareStatus`.
 * Return the <<#convert-table,correct color>> based on the `SquareStatus`.
   This https://docs.microsoft.com/en-us/dotnet/api/system.windows.media.brushes?view=windowsdesktop-6.0[class] might prove helpful.
+* When processing the different cases for `SquareStatus`, don't assume there are only four.
+  Deal with each case by comparing values explicitly and have the `else` clause throw an exception.
++
+[%collapsible]
+=====
+[source,csharp]
+----
+// Correct
+switch (squareStatus)
+{
+    case SquareStatus.Uncovered:
+        // Deal with uncovered
+
+    case SquareStatus.Covered:
+        // Deal with covered
+
+    case SquareStatus.Mine:
+        // Deal with mine
+
+    case SquareStatus.Flagged:
+        // Deal with flagged
+
+    default:
+        // Throw exception
+}
+
+// Incorrect
+switch (squareStatus)
+{
+    case SquareStatus.Uncovered:
+        // Deal with uncovered
+
+    case SquareStatus.Covered:
+        // Deal with covered
+
+    case SquareStatus.Mine:
+        // Deal with mine
+
+    default:
+        // Assume SquareStatus.Flagged
+}
+----
+=====
 
 Check your work by running your application.
+====
+
+=== Generalizing the Converter
+
+`SquareStatusConverter` is now hardcoded to translate a `SquareStatus` to a `Brush`.
+This is generally a very bad idea since it impedes reusability.
+We now generalize the converter to make it usable in more situations.
+
+[NOTE,caption={task-caption}]
+====
+To the class `SquareStatusConverter`, add public properties named
+
+* `Uncovered`
+* `Covered`
+* `Flagged`
+* `Mine`
+
+Each property should have type `object` and be both gettable and settable.
+
+Have `Convert` return the corresponding property's value for each possible value of `SquareStatus`.
+====
+
+[NOTE,caption={task-caption}]
+====
+In the XAML file, set each property of the converter to the appropriate value:
+
+[source,xaml]
+----
+<converter:SquareStatusConverter x:Key="squareStatusToEllipseFill"
+                                 Uncovered="Transparent"
+                                 ... />
+----
+====
+
+Run your code.
+Everything should still work the same.
+
+=== Label
+
+As explained earlier,  ``Square``'s `Status` can take on four values.
+For three out of these four, we have an appropriate visualization:
+
+* Nothing is shown on buttons that correspond to covered squares.
+* A black circle is shown for uncovered mines.
+* An orange circle appears on flagged squares.
+
+This leaves us with uncovered squares with no mines, in which case a number denoting the number of neighboring mines should be shown.
+An `Ellipse` will not suffice here; instead we need `TextBlock` to deal with this case.
+
+We can make two GUI elements overlap using a `Grid`:
+
+[source,xaml]
+----
+<Grid>
+  <Ellipse />
+  <TextBlock />
+</Grid>
+----
+
+[NOTE,caption={task-caption}]
+====
+Update the ``Button``'s `Content` so as to show both an `Eclipse` and a `TextBlock`.
+
+In order to check whether it works, set `TextBlock.Text` to `"0"` and run your program; it should appear in each `Button`.
+Make sure the text is centered both horizontally and vertically.
+====
+
+Next, we make the `TextBlock` show the correct text:
+
+* If a `Square` is uncovered and free of mines, it should show a mine count.
+* In all other cases, no text should be shown.
+
+[NOTE,caption={task-caption}]
+====
+Make the `TextBlock` show the expected text.
+
+* Add a binding to `TextBlock.Text` to make it show the number of neighboring mines.
+* Add a binding to `TextBlock.Visible`.
+  You will need a new `SquareStatusConverter` which maps ``SquareStatus``es to `Visibility` values.
+
+Run your code.
+Each `Square` should have an appropriate label.
 ====

@@ -65,6 +65,11 @@ Failure to meet these requirements will inevitably lead to a failing grade.
 .. The VM must not contain strings that are shown in the V. Use enums instead.
 . <<#external-files,No hard coded absolute paths>>
 . No external libraries
+. Clean code
+.. No big chunks in comments (rely on Git instead)
+.. Indentation
+.. Follow C# naming conventions
+.. Reasonable vertical whitespace, e.g., don't put 5 blank lines between two statements.
 
 [WARNING]
 ====
@@ -86,9 +91,11 @@ You might want to reconsider your approach.
 If an extension is implemented wrong, it will not be counted.
 We suggest to make some extra extensions as a safety measure.
 
-* In Play Screen, when mouse hovers over square, <<#disabled-buttons,it lights up>>. Note: the default highlight of ``Button``s does not count! Either change the highlight color or use something different than ``Button``s). This extension requires some code to be written.
-* After losing, highlight bombs and pressed bomb
-* Different color depending of amount of bombs adjacent
+* In Play Screen, when mouse hovers over square, <<#disabled-buttons,it lights up>>.
+  Note: the default highlight of ``Button``s does not count! Either change the highlight color or use something different than ``Button``s).
+  This extension requires some code to be written.
+* After losing, highlight mines and last uncovered square (which contained a mine)
+* Different font color depending of amount of neighboring mines
 * Choice between <<#themes,themes>> (e.g. dark and light theme)
 * <<#animation,Animation>> (NOT gifs, but WPF animations)
 * Timer
@@ -99,9 +106,10 @@ We suggest to make some extra extensions as a safety measure.
 * Improved visualization of squares
 ** Implemented using `ContentControl`, ``DataTemplate``s and ``DataTrigger``s.
 ** Uncovered mine-free squares show the amount of adjacent mines
-** Uncovered squares with no adjacent bombs are blank
-** Uncovered squares with mines should show a picture of a bomb
+** Uncovered squares with no adjacent mines are blank
+** Uncovered squares with mines should show a picture of a mine
 ** Flagged squares should show a picture of a flag
+* Have the first uncovered square never contain a mine
 
 == Extra Information
 
