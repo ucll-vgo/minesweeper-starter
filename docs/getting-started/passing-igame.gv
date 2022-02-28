@@ -1,0 +1,44 @@
+digraph G {
+    node [shape=none,fontname=Consolas,margin="0.3,0.1"]
+    rankdir=LR
+
+    GameVM [
+      label =<<TABLE BORDER="2" CELLBORDER="0" CELLSPACING="1" CELLPADDING="5">
+                      <TR><TD PORT="header"><B><U>GameViewModel</U></B></TD></TR>
+                      <TR><TD PORT="Board">Board</TD></TR>
+                  </TABLE>>
+    ]
+
+    BoardVM [
+      label =<<TABLE BORDER="2" CELLBORDER="0" CELLSPACING="1" CELLPADDING="5">
+                      <TR><TD PORT="header"><B><U>GameBoardViewModel</U></B></TD></TR>
+                      <TR><TD PORT="Rows">Rows</TD></TR>
+                  </TABLE>>
+    ]
+
+    RowVM [
+        label =<<TABLE BORDER="2" CELLBORDER="0" CELLSPACING="1" CELLPADDING="5">
+                      <TR><TD PORT="header"><B><U>GameBoardRowViewModel</U></B></TD></TR>
+                      <TR><TD PORT="Squares">Squares</TD></TR>
+                  </TABLE>>
+    ]
+
+    SquareVM [
+        label =<<TABLE BORDER="2" CELLBORDER="0" CELLSPACING="1" CELLPADDING="5">
+                      <TR><TD PORT="header"><B><U>SquareViewModel</U></B></TD></TR>
+                      <TR><TD PORT="Square">Square</TD></TR>
+                      <TR><TD PORT="Uncover">Uncover</TD></TR>
+                  </TABLE>>
+    ]
+
+    Uncover [
+        label =<<TABLE BORDER="2" CELLBORDER="0" CELLSPACING="1" CELLPADDING="5">
+                      <TR><TD PORT="header"><B><U>UncoverSquareCommand</U></B></TD></TR>
+                  </TABLE>>
+    ]
+
+    GameVM:Board -> BoardVM:header [label="IGame"]
+    BoardVM:Rows -> RowVM:header [headlabel="*",labeldistance=1.5,label="IGame"]
+    RowVM:Squares -> SquareVM:header [headlabel="*",labeldistance=1.5,label="IGame"]
+    SquareVM:Uncover -> Uncover:header [label="IGame"]
+}

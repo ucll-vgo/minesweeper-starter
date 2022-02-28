@@ -27,147 +27,23 @@ include::getting-started/visualizing-squares.asciidoc[]
 
 include::getting-started/view-models.asciidoc[]
 
+include::getting-started/uncovering.asciidoc[]
 
 
-
-
-
-// == Uncovering Squares
-
-// === UncoverSquareCommand
-
-// We would like to be able to uncover squares on the game board by clicking on the corresponding button.
-// This can be achieved by adding a command to the `GameBoardSquareViewModel`.
-// Let's start small.
-
-// [NOTE,caption={task-caption}]
-// ====
-// * In the ViewModel, define a `UncoverSquareCommand` class that implements `ICommand`.
-// * Have the `Execute` method print a debug message.
-// +
-// [source,csharp]
-// ----
-// Debug.WriteLine("You clicked me");
-// ----
-// * `CanExecute` can for now always return `true`.
-// * In `GameBoardSquareViewModel`, add a `UncoverSquare` property of type `ICommand`, getter only.
-// * Initialize this `UncoverSquare` property in the constructor.
-// * In `MainWindow.xaml`, update the `Button` so that pressing it invokes `UncoverSquare`.
-
-// Run it.
-// Whenever you click a button, `You clicked me` should appear in the output pane.
-// ====
-
-// === Passing Along IGame
-
-// We would like to implement ``UncoverSquareCommand``'s ``Execute` method, but we run into a number of issues.
-// We'll deal with each in turn.
-
-// The functionality for visiting squares resides in the `UncoverSquare` method of `IGame`.
-// This means `UncoverSquareCommand` would need access to the `IGame`, but currently it only receives a measly `Square`.
-// However, we know the `GameViewModel` object holds the `IGame`.
-// We will have to pass it along to all intermediate ViewModel classes so that the `IGame` might reach `UncoverSquareCommand`.
-
-// As always, let's do this step by step.
-
-// [NOTE,caption={task-caption}]
-// ====
-// Currently, `GameBoardViewModel` receives only an `IGameBoard`.
-
-// * Its constructor should receive an `IGame` instead of an `IGameBoard`.
-// * In the constructor, retrieve the `IGameBoard` from the `IGame`.
-
-// Note that `GameBoardViewModel` does *not* need to save the `IGame` itself in a field; saving the `IGameBoard` is sufficient.
-
-// Run your code after this step.
-// Everything should still work.
-// ====
-
-// [NOTE,caption={task-caption}]
-// ====
-// Next, we need to let `GameBoardViewModel` pass the `IGame` along to `GameBoardRowViewModel`.
-// Add an extra `IGame` parameter to its constructor and update `GameBoardViewModel` accordingly.
-// Right now, `GameBoardViewModel` doesn't need to do anything with this `IGame`.
-
-// Run your code and check that everything works.
-// ====
-
-// [NOTE,caption={task-caption}]
-// ====
-// Now we have `GameBoardRowViewModel` pass the `IGame` to `GameBoardSquareViewModel.`
-// At this stage, `GameBoardSquareViewModel` needn't do anything with the `IGame`.
-
-// Again, run your code.
-// ====
-
-// [NOTE,caption={task-caption}]
-// ====
-// Finally, have `GameBoardSquareViewModel` give the `IGame` to `UncoverSquareCommand`.
-// `UncoverSquareCommand` will have to store the `IGame` in a field.
-
-// Yes, run your code, yet again.
-// ====
-
-// === Square Position
-
-// Now that `UncoverSquareCommand` finally has access to the `IGame`, we should be able to call its `UncoverSquare` method.
-// However, there's a catch: the `UncoverSquare` method needs to know _where_ to visit.
-// Right now, `UncoverSquareCommand` has no clue about which square on the board it is associated with.
-
-// It is important to realize that there as many `UncoverSquareCommand` objects as there are squares on the board: each button in the view has its very own `UncoverSquareCommand`.
-// This means we can tell each such object where it is positioned.
-
-// [NOTE,caption={task-caption}]
-// ====
-// Let's start at the bottom first, i.e., `UncoverSquareCommand`.
-
-// * Add a `Vector2D` field named `position` to `UncoverSquareCommand`.
-// * Add an extra constructor parameter.
-
-// We go up one level, to `GameBoardSquareViewModel`.
-// It represents one square, so it makes sense for it to also have a position associated with it.
-
-// * Add a new constructor parameter `Vector2D position`.
-// * Remove the `Square square` parameter.
-//   Instead, let the constructor itself look up the square using the provided `IGame` and `Vector2D`.
-// * Pass the position along to the `UncoverSquareCommand` constructor.
-
-// Now it's ``GameBoardRowViewModel``'s turn.
-// Since it is a full row, we can only give it its `y` coordinate.
-
-// * Have the constructor accept only an `IGame game` and an `int y`.
-//   This information should be sufficient to initialize its `Squares` property: for each square on row `y` of `game.Board`, it must create `GameBoardSquareViewModel`.
-
-// Lastly, `GameBoardViewModel`.
-
-// * Update this class so that it gives each `GameBoardRowViewModel` its corresponding `y` coordinate.
-
-// Run your code and check that everything still works.
-// ====
-
-// We'd like to make sure each `UncoverSquareCommand` does indeed receive its position.
-// Let's make a quick change to check this.
-
-// [NOTE,caption={task-caption}]
-// ====
-// Have `UncoverSquareCommand` print its position instead of `You clicked me`.
-
-// Run the program, click on buttons and check that the right coordinates are outputted.
-// ====
 
 // == Reactive Programming
 
 // Now that `UncoverSquareCommand` has both the `IGame` object and its position, surely we're ready to make it work?
-// Sadly, there's still one problem: ``IGame``'s `UncoverSquare` does not modify the object, but returns a new one.
+// Sadly, there's still one problem: ``IGame``'s `Uncover` does not modify the object, but returns a new one.
 // We clearly need to do _something_ with this new `IGame` object, but what?
 
 // The new `IGame` object contains an updated board.
-// This means that all ``GameBoardSquareViewModel``s should update their `Square` property.
-// However, the `UncoverSquareCommand` object has no way of contacting each `GameBoardSquareViewModel`.
-// We could of course give each `UncoverSquareCommand` object a list of all existing ``GameBoardSquareViewModel``s so that it can ask them to refresh themselves.
+// This means that all ``SquareViewModel``s should update their `Square` property.
+// However, the `UncoverSquareCommand` object has no way of contacting each `SquareViewModel`.
+// We could of course give each `UncoverSquareCommand` object a list of all existing ``SquareViewModel``s so that it can ask them to refresh themselves.
 // Fortunately, there is a much easier solution.
 
-// Note that not only do we need the ``GameBoardSquareViewModel``s to update their `Square` property, we also need the View to be aware of this change.
+// Note that not only do we need the ``SquareViewModel``s to update their `Square` property, we also need the View to be aware of this change.
 // Without some kind of notification, the View will not know of this update and therefore not see any reason of updating itself.
 
 // This is where Reactive Programming shows its strength.
@@ -254,19 +130,19 @@ include::getting-started/view-models.asciidoc[]
 // It is important that you understand what is going on here:
 
 // * We retrieve the current game from the cell: `currentGame.Value` in the right side of the assignment.
-// * We call `UncoverSquare` on this `IGame` object.
+// * We call `Uncover` on this `IGame` object.
 // * This returns a new `IGame` object.
 // * We store this new `IGame` object in the `currentGame` cell.
 // * The change in `currentGame` causes `currentGameBoard` to be updated.
 // * `upperLeftCorner` is aware of this change and fetches its new value from the board: `Uncovered or Mine`.
 
-// We can create one derived cell per square and wrap each one in a `GameBoardSquareViewModel` object.
+// We can create one derived cell per square and wrap each one in a `SquareViewModel` object.
 
 // image::game-cell.svg[Static,600,align="center"]
 
 // Using cells takes care of two issues at once:
 
-// * We don't need to manually update all ``GameBoardSquareViewModel``s `Square` property anymore: this is done automatically by derived cells.
+// * We don't need to manually update all ``SquareViewModel``s `Square` property anymore: this is done automatically by derived cells.
 // * WPF "understands" cells (because they implement the `INotifyPropertyChanged` interface). Whenever a cell's value changes, WPF will know that it will need to rerender the view.
 
 // It is now time for you to introduce cells in your code.
@@ -283,7 +159,7 @@ include::getting-started/view-models.asciidoc[]
 // ** From this cell, derive an `ICell<IGameBoard>` and store it in the field.
 // * `GameBoardRowViewModel`
 // ** Its constructor should now receive an `ICell<IGame>`.
-// * `GameBoardSquareViewModel`
+// * `SquareViewModel`
 // ** The constructor receives an `ICell<IGame>`.
 // ** Change the `Square` property's type to `ICell<string>` by using the ToString() method while deriving.
 // ** In the constructor, initialize it to a derived cell that contains the `Square` at the appropriate position.
@@ -301,7 +177,7 @@ include::getting-started/view-models.asciidoc[]
 
 // [NOTE,caption={task-caption}]
 // ====
-// In ``UncoverSquareCommand``'s `Execute` method, call the ``IGame``'s `UncoverSquare` and store its result back into the cell.
+// In ``UncoverSquareCommand``'s `Execute` method, call the ``IGame``'s `Uncover` and store its result back into the cell.
 
 // Run the code.
 // You should be able to uncover squares.
@@ -310,7 +186,7 @@ include::getting-started/view-models.asciidoc[]
 // == Invalid Moves
 
 // If you click on a cell which has been uncovered already, the program will crash.
-// This is due to `UncoverSquare` throwing an exception when you're making an invalid move.
+// This is due to `Uncover` throwing an exception when you're making an invalid move.
 
 // === CellCommand
 
@@ -355,7 +231,7 @@ include::getting-started/view-models.asciidoc[]
 
 // [NOTE,caption={task-caption}]
 // ====
-// In ``GameBoardSquareViewModel``'s constructor
+// In ``SquareViewModel``'s constructor
 
 // * Add a local variable `ICell<bool> isValidMove` that is simply initialized to `true`.
 //   We will have to fix this in a later step.
@@ -371,7 +247,7 @@ include::getting-started/view-models.asciidoc[]
 
 // [NOTE,caption={task-caption}]
 // ====
-// In ``GameBoardSquareViewModel``'s constructor
+// In ``SquareViewModel``'s constructor
 
 // * Set `isValidMove` to a cell of type `ICell<bool>` that derives from `game`.
 //   Its contents should reflect whether it is valid to uncover at the square's position.
@@ -447,7 +323,7 @@ include::getting-started/view-models.asciidoc[]
 // [NOTE,caption={task-caption}]
 // ====
 // * Implement SquareWrapper in the ViewModel project using functions from IGame. Handle functions that throw errors properly without try-catch.
-// * In GameBoardSquareViewModel, change the type of property Square from `ICell<string>` to `ICell<SquareWrapper>`
+// * In SquareViewModel, change the type of property Square from `ICell<string>` to `ICell<SquareWrapper>`
 // * Add a new folder named `Converters` to your View project.
 // * Add a new class file named `SquareColorConverter.cs` to this folder.
 // * Have `SquareColorConverter` implement `IValueConverter`, i.e., have Visual Studio generate stubs.
