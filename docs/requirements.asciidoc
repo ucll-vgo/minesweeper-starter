@@ -34,16 +34,22 @@ Failure to meet these requirements will inevitably lead to a failing grade.
 . Play Screen
 .. Ability to uncover squares
 .. Ability to flag and unflag covered squares
-.. Only covered squares are interactable
-.. Uncovered squares show amount of adjacent bombs
-.. Uncovered squares with no adjacent bombs are blank
+.. Only covered squares can be interacted with
+.. Visualization of squares
+... Uncovered mine-free squares show the amount of adjacent mines
+... Uncovered squares with no adjacent bombs are blank
+... Uncovered squares with mines should show a picture of a bomb
+... Flagged squares should show a picture of a flag
 .. Detection of game over
 .. Show bombs when game over
 .. Possibility of starting new game after game over
 . Decent GUI
 .. Game board <<#viewbox,fills>> the window
 .. Game board is centered
+. ``ValueConverter``s must be parameterized
+. No reliance on any `ToString()` method
 . At least 3 <<#extensions,extensions>>
+. V binds only on VM objects
 . It must work using Visual Studio.
   Realize that Rider does _not_ seem to produce VS-compatible projects.
 
@@ -88,8 +94,14 @@ We suggest to make some extra extensions as a safety measure.
 * Timer
 * Let players choose colors in settings screen
 * User Defined WPF Control for squares
-* Highscore board
+* High score board
 * Hint button
+* Improved visualization of squares
+** Implemented using `ContentControl`, ``DataTemplate``s and ``DataTrigger``s.
+** Uncovered mine-free squares show the amount of adjacent mines
+** Uncovered squares with no adjacent bombs are blank
+** Uncovered squares with mines should show a picture of a bomb
+** Flagged squares should show a picture of a flag
 
 == Extra Information
 
