@@ -27,14 +27,14 @@ namespace Model.MineSweeper
         /// <param name="flooding">Whether or not flooding is enabled.</param>
         /// <param name="seed">The seed for randomly generating mines. Entering null will generate a random seed.</param>
         /// <returns></returns>
-        public static IGame CreateRandom(int boardSize, double mineProbability, bool flooding = true, int? seed = null)
+        public static IGame CreateRandom( int boardSize, double mineProbability, bool flooding = true, int? seed = null )
         {
             var board = GameBoard.CreateRandom( boardSize, boardSize, seed ?? new Random().Next(), mineProbability );
 
-            return new InProgressGame(board, flooding);
+            return new InProgressGame( board, flooding );
         }
 
-        public static IGame Parse(IEnumerable<string> rows, bool flooding=true)
+        public static IGame Parse( IEnumerable<string> rows, bool flooding = true )
         {
             var board = GameBoard.Parse( rows );
 
@@ -57,7 +57,7 @@ namespace Model.MineSweeper
         /// <param name="position">Where to uncover a square.</param>
         /// <returns>A new game object with the updated board.</returns>
         /// <exception cref="InvalidOperationException">Thrown if the game is over.</exception>
-        IGame UncoverSquare(Vector2D position);
+        IGame UncoverSquare( Vector2D position );
 
         /// <summary>
         /// Sets or removes a flag from a square of the board like a Toggle.
@@ -65,7 +65,7 @@ namespace Model.MineSweeper
         /// <param name="position">Where to set or remove a flag.</param>
         /// <returns>A new game object with the updated board.</returns>
         /// <exception cref="InvalidOperationException">Thrown if the game is over.</exception>
-        IGame FlagSquare(Vector2D position);
+        IGame ToggleFlag( Vector2D position );
 
         /// <summary>
         /// Checks if square on <paramref name="position" /> is covered.
@@ -73,7 +73,7 @@ namespace Model.MineSweeper
         /// <param name="position">The position of the square.</param>
         /// <returns>True if the square is covered at <paramref name="position"/>, false otherwise.</returns>
         /// <exception cref="InvalidOperationException">Thrown if the game is over.</exception>
-        bool IsSquareCovered(Vector2D position);
+        bool IsSquareCovered( Vector2D position );
 
         /// <summary>
         /// Gets the adjacent mines of a square on <paramref name="position" /> when it's uncovered.
@@ -81,7 +81,7 @@ namespace Model.MineSweeper
         /// <param name="position">The position of the square.</param>
         /// <returns>If the square is uncovered at <paramref name="position"/>, returns the amount of adjacent mines.</returns>
         /// <exception cref="InvalidOperationException">Thrown if the square is covered is over.</exception>
-        int GetAdjacentMines(Vector2D position);
+        int GetAdjacentMines( Vector2D position );
 
         /// <summary>
         /// Returns the positions that make up the locations of the mines.
@@ -132,7 +132,7 @@ namespace Model.MineSweeper
 
     internal abstract class Game : IGame
     {
-        protected Game(GameBoard gameBoard)
+        protected Game( GameBoard gameBoard )
         {
             Board = gameBoard;
         }
@@ -143,20 +143,20 @@ namespace Model.MineSweeper
 
         public abstract GameStatus Status { get; }
 
-        public abstract IGame UncoverSquare(Vector2D position);
+        public abstract IGame UncoverSquare( Vector2D position );
 
-        public abstract IGame FlagSquare(Vector2D position);
+        public abstract IGame ToggleFlag( Vector2D position );
 
         public abstract ISet<Vector2D> Mines { get; }
 
         public ISet<Vector2D> Flags => Board.Flags;
 
-        public bool IsSquareCovered(Vector2D position) => Board[position].IsCovered;
+        public bool IsSquareCovered( Vector2D position ) => Board[position].IsCovered;
 
-        public int GetAdjacentMines(Vector2D position)
+        public int GetAdjacentMines( Vector2D position )
         {
-            if (IsSquareCovered(position))
-                throw new InvalidOperationException("Square is still covered");
+            if ( IsSquareCovered( position ) )
+                throw new InvalidOperationException( "Square is still covered" );
 
             return Board[position].NeighboringMineCount;
         }
@@ -166,14 +166,14 @@ namespace Model.MineSweeper
     {
         private bool isFloodingEnabled;
 
-        public InProgressGame(GameBoard gameBoard, bool flooding) : base(gameBoard)
+        public InProgressGame( GameBoard gameBoard, bool flooding ) : base( gameBoard )
         {
             isFloodingEnabled = flooding;
         }
 
         public override GameStatus Status => GameStatus.InProgress;
 
-        public override IGame UncoverSquare(Vector2D position)
+        public override IGame UncoverSquare( Vector2D position )
         {
             if ( !IsSquareCovered( position ) )
             {
@@ -182,10 +182,10 @@ namespace Model.MineSweeper
 
             var nextBoard = Board.Copy();
             var square = nextBoard[position];
-            
+
             square.Uncover();
 
-            if ( square.IsMine )
+            if ( square.ContainsMine )
             {
                 return new LostGame( nextBoard );
             }
@@ -195,7 +195,7 @@ namespace Model.MineSweeper
                 nextBoard.FloodSquares( position );
             }
 
-            if ( nextBoard.AreAllBomblessSquaresUncovered )
+            if ( nextBoard.AreAllMineFreeSquaresUncovered )
             {
                 return new WonGame( nextBoard );
             }
@@ -205,36 +205,38 @@ namespace Model.MineSweeper
             }
         }
 
-        public override IGame FlagSquare(Vector2D position)
+        public override IGame ToggleFlag( Vector2D position )
         {
-            if (!IsSquareCovered(position))
-                throw new InvalidOperationException("Square already uncovered");
+            if ( !IsSquareCovered( position ) )
+            {
+                throw new InvalidOperationException( "Square already uncovered" );
+            }
 
             var nextBoard = Board.Copy();
             nextBoard[position].ToggleFlag();
-            return new InProgressGame(nextBoard, isFloodingEnabled);
+            return new InProgressGame( nextBoard, isFloodingEnabled );
         }
 
-        public override ISet<Vector2D> Mines => throw new InvalidOperationException("Game is not over yet");
+        public override ISet<Vector2D> Mines => throw new InvalidOperationException( "Game is not over yet" );
     }
 
     internal abstract class FinishedGame : Game
     {
-        public FinishedGame(GameBoard gameBoard) : base(gameBoard)
+        public FinishedGame( GameBoard gameBoard ) : base( gameBoard )
         {
             // NOP
         }
 
         public override ISet<Vector2D> Mines => Board.Mines;
 
-        public override IGame UncoverSquare(Vector2D position) => throw new InvalidOperationException("Game finished");
+        public override IGame UncoverSquare( Vector2D position ) => throw new InvalidOperationException( "Game finished" );
 
-        public override IGame FlagSquare(Vector2D position) => throw new InvalidOperationException("Game finished");
+        public override IGame ToggleFlag( Vector2D position ) => throw new InvalidOperationException( "Game finished" );
     }
 
     internal class WonGame : FinishedGame
     {
-        public WonGame(GameBoard gameBoard) : base(gameBoard)
+        public WonGame( GameBoard gameBoard ) : base( gameBoard )
         {
             // NOP
         }

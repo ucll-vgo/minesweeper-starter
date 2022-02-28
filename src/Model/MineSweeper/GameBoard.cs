@@ -2,6 +2,7 @@
 using System;
 using System.Linq;
 using System.Collections.Generic;
+using System.Diagnostics;
 
 namespace Model.MineSweeper
 {
@@ -9,42 +10,79 @@ namespace Model.MineSweeper
     {
         private readonly Grid<Square> _board;
 
-        public const int MinimumSize = 6;
+        public const int MinimumSize = 5;
 
         public const int MaximumSize = 20;
 
         public static GameBoard Parse(IEnumerable<string> rows)
         {
+            if ( rows == null )
+            {
+                throw new ArgumentNullException( nameof( rows ) );
+            }
+
             var parsed = rows.Select( ParseRow ).ToList();
+
+            if ( parsed.Count == 0 )
+            {
+                throw new ArgumentException( "At least one row is expected", nameof( rows ) );
+            }
+            else if ( !parsed.All(row => row.Count == parsed[0].Count) )
+            {
+                throw new ArgumentException( "Rows should have the same width", nameof( rows ) );
+            }
+
             var width = parsed[0].Count;
             var height = parsed.Count;
-            var mines = new Grid<bool>( width, height, p => parsed[p.Y][p.X] );
-            var board = mines.Map( ( p, b ) => new Square( b, CountNeighboringMines( p ) ) );
 
-            return new GameBoard( board );
+            if ( !IsValidWidth(width) )
+            {
+                throw new ArgumentException( "Invalid width", nameof( rows ) );
+            }
+            else if ( !IsValidHeight(height))
+            {
+                throw new ArgumentException( "Invalid height", nameof( rows ) );
+            }
+            
+            var mines = new Grid<bool>( width, height, p => parsed[p.Y][p.X] );
+
+            return CreateGameBoardFromMines( mines );
                 
 
             IList<bool> ParseRow( string row ) => row.Select( c => c == '*' ).ToList();
-
-            int CountNeighboringMines( Vector2D position ) => mines.Around(position).Count( p => mines[p] );
         }
 
-        public static GameBoard CreateRandom(int width, int height, int seed, double chanceOfMine)
+        public static GameBoard CreateRandom( int width, int height, int seed, double mineProbability )
         {
-            if (width < MinimumSize || width > MaximumSize)
-                throw new ArgumentException(nameof(width));
+            if ( !IsValidWidth(width) )
+            {
+                throw new ArgumentException( $"width should be between {MinimumSize} and {MaximumSize}", nameof( width ) );
+            }
+            else if ( !IsValidHeight(height) )
+            {
+                throw new ArgumentException( $"height should be between {MinimumSize} and {MaximumSize}", nameof( height ) );
+            }
+            else if ( mineProbability < 0 || mineProbability > 1 )
+            {
+                throw new ArgumentException( $"mineProbability should be between 0 and 1", nameof( mineProbability ) );
+            }
 
-            if (height < MinimumSize || height > MaximumSize)
-                throw new ArgumentException(nameof(height));
+            var random = new Random( seed );
+            var mines = new Grid<bool>( width, height, _ => random.NextDouble() < mineProbability );
 
-            var random = new Random(seed);
-            var minefield = new Grid<bool>(width, height, _ => random.NextDouble() < chanceOfMine);
-            var board = new Grid<Square>(width, height, position => new Square(minefield[position], CountNeighboringMines(position)));
+            return CreateGameBoardFromMines( mines );
+        }
 
-            return new GameBoard( board );
+        private static bool IsValidWidth( int width ) => MinimumSize <= width && width <= MaximumSize;
 
+        private static bool IsValidHeight( int height ) => MinimumSize <= height && height <= MaximumSize;
 
-            int CountNeighboringMines( Vector2D position ) => minefield.Around( position ).Count( p => minefield[p] );
+        private static GameBoard CreateGameBoardFromMines(Grid<bool> mines)
+        {
+            var squareGrid = mines.Map( ( p, b ) => new Square( b, CountNeighboringMines( p ) ) );
+            return new GameBoard( squareGrid );
+
+            int CountNeighboringMines( Vector2D position ) => mines.Around( position ).Count( p => mines[p] );
         }
 
         private GameBoard(Grid<Square> board)
@@ -64,15 +102,15 @@ namespace Model.MineSweeper
 
         public int Height => _board.Height;
 
-        internal bool AreAllBomblessSquaresUncovered => _board.Items.All(square => square.IsMine || !square.IsCovered );
+        internal bool AreAllMineFreeSquaresUncovered => _board.Items.All(square => square.ContainsMine || !square.IsCovered );
 
-        internal ISet<Vector2D> Mines => _board.Positions.Where(p => _board[p].IsMine).ToHashSet();
+        internal ISet<Vector2D> Mines => _board.Positions.Where(p => _board[p].ContainsMine).ToHashSet();
 
         internal ISet<Vector2D> Flags => _board.Positions.Where(p => _board[p].IsFlagged).ToHashSet();
 
         internal void FloodSquares(Vector2D position)
         {
-            if ( _board[position].NeighboringMineCount == 0 )
+            if ( _board[position].NeighboringMineCount == 0 && !_board[position].IsFlagged )
             {
                 foreach ( var p in _board.Around(position) )
                 {
@@ -85,6 +123,11 @@ namespace Model.MineSweeper
                     }
                 }
             }
+        }
+
+        public override string ToString()
+        {
+            return string.Join( "\n", _board.Rows.Select( row => string.Join( "", row.Items.Select( square => square.ToString() ) ) ) );
         }
     }
 }
