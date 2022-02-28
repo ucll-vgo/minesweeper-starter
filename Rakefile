@@ -61,6 +61,7 @@ def compile_graphviz
             relative_path = path.relative_path_from root
             from_path = root + relative_path
             to_path = dist + relative_path
+            to_path.dirname.mkpath
 
             puts "#{from_path} -> #{to_path}"
             output = `dot -Tsvg #{from_path.expand_path} -o #{to_path.expand_path.sub_ext('.svg')}`.strip
@@ -93,16 +94,21 @@ end
 desc 'Uploads dist to server'
 task :upload do
     Dir.chdir 'dist' do
-        `ssh -p 22345 -l upload leone.ucll.be rm -rf /home/frederic/courses/vgo/volume/*`
-        puts `scp -P 22345 -r * upload@leone.ucll.be:/home/frederic/courses/vgo/volume`
+        # `ssh -p 22345 -l upload leone.ucll.be rm -rf /home/frederic/courses/vgo/volume/*`
+        # puts `scp -P 22345 -r * upload@leone.ucll.be:/home/frederic/courses/vgo/volume`
+        `ssh upload.leone.ucll.be rm -rf /home/frederic/courses/vgo/volume/*`
+        puts `scp -r * upload.leone.ucll.be:/home/frederic/courses/vgo/volume`
     end
 end
 
 desc 'Equivalent to build:all'
 task :default => [ "build:all" ]
 
-desc 'Does the whole shebang including uploading'
-task :full => [ :clean, 'build:all', :upload ]
+desc 'Clean build (no upload)'
+task :all => [ :clean, 'build:all' ]
+
+desc 'Clean build + upload'
+task :full => [ :all, :upload ]
 
 desc 'Serves on localhost:8000'
 task :serve do
