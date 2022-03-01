@@ -16,6 +16,12 @@
 This is still work in progress.
 ====
 
+[IMPORTANT]
+====
+Do not add large binary files to your repository!
+Keep images and sounds minimal, max. 200kiB per student in total.
+====
+
 == Minimal Requirements
 
 Failure to meet these requirements will inevitably lead to a failing grade.
@@ -63,7 +69,7 @@ Failure to meet these requirements will inevitably lead to a failing grade.
 . The VM/M must not make *any* View-related decisions.
 .. No brushes/colors/... are allowed in the VM. Colors should simply not exist in the VM (except of course if colors are inherent to the domain, but this is not the case for Minesweeper.)
 .. The VM must not contain strings that are shown in the V. Use enums instead.
-. <<#external-files,No hard coded absolute paths>>
+. <<#absolute-paths,No hard coded absolute paths>>
 . No external libraries
 . Clean code
 .. No big chunks in comments (rely on Git instead)
@@ -94,7 +100,8 @@ We suggest to make some extra extensions as a safety measure.
 * In Play Screen, when mouse hovers over square, <<#disabled-buttons,it lights up>>.
   Note: the default highlight of ``Button``s does not count! Either change the highlight color or use something different than ``Button``s).
   This extension requires some code to be written.
-* After losing, highlight mines and last uncovered square (which contained a mine)
+* After losing, show _all_ mines and highlight the last uncovered square (which contained a mine)
+* Replay: after the game is over, allow the player to view a replay of his moves.
 * Different font color depending of amount of neighboring mines
 * Choice between <<#themes,themes>> (e.g. dark and light theme)
 * <<#animation,Animation>> (NOT gifs, but WPF animations)
@@ -148,13 +155,13 @@ It is of utmost importance that you get these right.
 ** Framework Project: .NET Core
 ** Project dependencies: none
 
-[#external-files]
-=== External Files
+[#absolute-paths]
+=== No Hardcoded Paths
 
 Your project should run without issues on other machines.
-Do not use any hardcoded absolute paths, since these will only work on _your_ machine.
+Do not use any hardcoded absolute paths (e.g., images), since these will only work on _your_ machine.
 
-==== Separate Files
+==== Referring to Resources
 
 If you wish to refer to external files, you should use relative paths.
 

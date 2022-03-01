@@ -182,5 +182,24 @@ Testing the code won't work yet, since (if you followed the instructions at leas
 ====
 Remove all hardcoded calls to `UncoverSquare` in ``MainWindow``'s constructor so that, when you run the application, you are greeted with an untouched gameboard.
 
-Now click around and see if everything works.
+Clicking on a button should uncover it.
+Check this is indeed the case.
+====
+
+=== Not Crashing
+
+See what happens if you try to uncover the same square twice.
+The game should throw an exception at you, since it is against the rules as defined by the domain classes.
+
+[NOTE,caption={task-caption}]
+====
+Update `UncoverSquareCommand` so that the button is disabled when the square has already been uncovered.
+====
+
+Now uncover a square with a mine and then click a covered square.
+This also causes an exception: exposing a mine causes you to lose the game and you are not allowed to proceed.
+
+[NOTE,caption={task-caption}]
+====
+Update `UncoverSquareCommand` so that all buttons are disabled when the game is over.
 ====
