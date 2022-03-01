@@ -140,9 +140,8 @@ It is now time for you to introduce cells in your code.
 ====
 Update the different ViewModel and `ICommand` classes.
 We suggest you start with `GameViewModel` and work your way down to `UncoverSquareCommand`.
-Divide the process in a series of minimal changes and recompile in between every step.
 
-* Replace `IGame` by `ICell<IGame>`.
+* Replace `IGame` by `ICell<IGame>`, except at the very top level: ``GameViewModel``'s constructor should still receive a regular `IGame` and put it in a new cell itself.
 * Wherever data is query from an `IGame` object, replace it by a derive:
 +
 [source,csharp]
@@ -175,8 +174,13 @@ We are finally ready to uncover squares on the board.
 [NOTE,caption={task-caption}]
 ====
 In ``UncoverSquareCommand``'s `Execute` method, call the ``IGame``'s `UncoverSquare` and store its result back into the cell.
+====
 
-Run the code.
-You should be able to uncover squares by clicking on their corresponding button.
-Take your time to understand why it works.
+Testing the code won't work yet, since (if you followed the instructions at least), ``MainWindow``'s constructor contains code that reveals a mine, meaning the game is actually already over.
+
+[NOTE,caption={task-caption}]
+====
+Remove all hardcoded calls to `UncoverSquare` in ``MainWindow``'s constructor so that, when you run the application, you are greeted with an untouched gameboard.
+
+Now click around and see if everything works.
 ====

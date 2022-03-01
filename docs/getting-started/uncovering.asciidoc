@@ -100,3 +100,42 @@ Have `UncoverSquareCommand` print its position instead of `You clicked me`.
 
 Run the program, click on buttons and check that the right coordinates are outputted.
 ====
+
+=== Cleaning Up
+
+Some cleanup is necessary.
+For example, ``SquareViewModel``s constructor currently receives three parameters:
+
+* An `IGame` object.
+* A `Vector2D`.
+* A `Square`.
+
+`Square` is redundant: given the `IGame` and `Vector2D`, the constructor can find the `Square` on its own.
+
+[source,diff]
+----
+SquareViewModel(IGame game, Vector2D position, Square square)
+{
+  // ...
+}
+
+// becomes
+
+SquareViewModel(IGame game, Vector2D position)
+{
+  var square = game.Board[position];
+  // ...
+}
+----
+
+[NOTE,caption={task-caption}]
+====
+Remove all redundant parameters from the ViewModel classes.
+====
+
+[NOTE]
+====
+You might wonder why we did all this work and didn't just pass a `Square` to `UncoverSquareCommand`.
+
+Cakepoint to the first student who can answer this question.
+====
