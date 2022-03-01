@@ -1,0 +1,205 @@
+== Reactive Programming
+
+Now that `UncoverSquareCommand` has both the `IGame` object and its position, surely we're ready to make it work?
+It's just a matter of calling its `UncoverSquare` method, right?
+Sadly, there's still one problem: ``IGame``'s `UncoverSquare` does not modify the object, but returns a new one.
+We clearly need to do _something_ with this new `IGame` object, but what?
+
+[source,csharp]
+----
+var updatedGame = game.UncoverSquare( position );
+// Now what?
+----
+
+The new `IGame` object contains an updated board with new ``Square``s in it.
+This means that all ``SquareViewModel``s should update their `Square` property.
+However, the `UncoverSquareCommand` object has no way of contacting each `SquareViewModel` and telling them about their new `Square`.
+We could of course give each `UncoverSquareCommand` object a list of all existing ``SquareViewModel``s so that it can tell each of them to refresh themselves, but this approach quickly becomes very messy.
+Fortunately, there is a much easier, cleaner solution.
+
+Note that not only do we need the ``SquareViewModel``s to update their `Square` property, we also need the View to be made aware of this change.
+Without some kind of notification, the View will not know of this update and therefore not see any reason of rerendering itself.
+The player would click to uncover a square, the objects would update their state accordingly, but visually nothing would change.
+
+This is where Reactive Programming shows its strength.
+Put shortly, Reactive Programming consists of having variables automatically update themselves whenever another variable changes.
+Consider this example:
+
+[source,csharp]
+----
+var x = 1;
+var doubleOfX = x * 2;
+x = 5;
+----
+
+After the execution of the last statement, `doubleOfX` will be equal to `2`, even though `x` equals `5`.
+Given its name, wouldn't it make more sense for `doubleOfX` to be `10`?
+
+The reason why `doubleOfX` equals `2` is, of course, that `doubleOfX` has been initialized at a time where `x` was still `1`.
+Changing `x` does not cause `doubleOfX` to be magically updated alongside with it.
+
+Reactive Programming involves creating variables that _do_ update themselves automatically.
+For example,
+
+[source,csharp]
+----
+// How things would work in a reactive setting
+var x = 1;
+var doubleOfX = x * 2; // doubleOfX == 2
+x = 5;                 // doubleOfX becomes 10
+x = 2;                 // doubleOfX becomes 4
+x = 7;                 // doubleOfX becomes 14
+
+var list = new List<int>() { 5, 2, 1, 4 };
+var max = list.Maximum();   // 5
+list.Add(10);               // max becomes 10
+----
+
+However, Reactive Programming is not built into C#.
+This is where ``Cell``s come in: these can be used to "fake" Reactive Programming.
+
+[NOTE]
+====
+`Cell` is not official terminology.
+We just picked that name because it was short.
+`ReactiveVariable<T>` would be more descriptive, but it would quickly become an eye sore.
+But maybe `R<T>` would have been a better choice given that it will be used all over the place.
+====
+
+[source,csharp]
+----
+var x = Cell.Create(1);
+var doubleOfX = x.Derive(k => k * 2); // defines relation between doubleOfX and x
+                                      // doubleOfX.Value == 2
+x.Value = 5;                          // doubleOfX.Value == 10
+x.Value = 2;                          // doubleOfX.Value == 4
+x.Value = 7;                          // doubleOfX.Value == 14
+----
+
+Here, `Derive` creates a new element that is kept in sync with the original element.
+The lambda `k => k * 2` expresses how `doubleOfX` is related to `x`:
+
+* The parameter `k` contains the value of the original element (`x`).
+* The body `k * 2` tells how to compute the derived element's value (`doubleOfX`).
+
+Let's see how we can leverage Reactive Programming in the case of Minesweeper.
+
+=== Cell
+
+Say we start off with an `ICell<IGame>` in which we store the current game state.
+
+[source,csharp]
+----
+var currentGame = Cell.Create(IGame.Create(5, true));
+----
+
+From this we can derive the game board:
+
+[source,csharp]
+----
+var currentGameBoard = currentGame.Derive(g => g.Board);
+----
+
+We can then create a derived element that contains the square in the upper left corner of the board:
+
+[source,csharp]
+----
+var upperLeftCorner = currentGameBoard.Derive(b => b[new Vector2D(0,0)]);
+----
+
+Initially, `upperLeftCorner.Value` will be covered, since that square hasn't been visited yet.
+Say we visit there:
+
+[source,csharp]
+----
+// Uncovering a square
+currentGame.Value = currentGame.Value.UncoverSquare( new Vector2D(0, 0) );
+----
+
+It is important that you understand what is going on here:
+
+* We retrieve the current game from the cell: `currentGame.Value` in the right side of the assignment.
+* We call `UncoverSquare` on this `IGame` object.
+* This returns a new `IGame` object.
+* We store this new `IGame` object in the `currentGame` cell.
+* The change in `currentGame` causes `currentGameBoard` to be updated.
+* `upperLeftCorner` is aware of this change and fetches its new value from the board: `Uncovered or Mine`.
+
+We can create one derived cell per square and wrap each one in a `SquareViewModel` object.
+
+image::game-cell.svg[Static,600,align="center"]
+
+Using cells takes care of two issues at once:
+
+* We don't need to manually update all ``SquareViewModel``s `Square` property anymore: this is done automatically by derived cells.
+* WPF "understands" cells (because they implement the `INotifyPropertyChanged` interface). Whenever a cell's value changes, WPF will know that it will need to rerender the view.
+
+It is now time for you to introduce cells in your code.
+
+[NOTE,caption={task-caption}]
+====
+Update the different ViewModel and `ICommand` classes.
+We suggest you start with `GameViewModel` and work your way down to `UncoverSquareCommand`.
+
+* Replace `IGame` by `ICell<IGame>`, except at the very top level: ``GameViewModel``'s constructor should still receive a regular `IGame` and put it in a new cell itself.
+* Wherever data is query from an `IGame` object, replace it by a derive:
++
+[source,csharp]
+----
+IGameBoard board = game.Board;
+
+// becomes
+
+ICell<IGameBoard> board = game.Derive(g => g.Board);
+----
+
+Bindings in XAML have to be updated in case they extract data from a cell:
+
+[source,xaml]
+----
+{Binding SomeProperty}
+
+<!-- becomes -->
+
+{Binding SomeProperty.Value}
+----
+
+Check that everything still works exactly the same.
+====
+
+=== Making it Work
+
+We are finally ready to uncover squares on the board.
+
+[NOTE,caption={task-caption}]
+====
+In ``UncoverSquareCommand``'s `Execute` method, call the ``IGame``'s `UncoverSquare` and store its result back into the cell.
+====
+
+Testing the code won't work yet, since (if you followed the instructions at least), ``MainWindow``'s constructor contains code that reveals a mine, meaning the game is actually already over.
+
+[NOTE,caption={task-caption}]
+====
+Remove all hardcoded calls to `UncoverSquare` in ``MainWindow``'s constructor so that, when you run the application, you are greeted with an untouched gameboard.
+
+Clicking on a button should uncover it.
+Check this is indeed the case.
+====
+
+=== Not Crashing
+
+See what happens if you try to uncover the same square twice.
+The game should throw an exception at you, since it is against the rules as defined by the domain classes.
+
+[NOTE,caption={task-caption}]
+====
+Update `UncoverSquareCommand` so that the button is disabled when the square has already been uncovered.
+====
+
+Now uncover a square with a mine and then click a covered square.
+This also causes an exception: exposing a mine causes you to lose the game and you are not allowed to proceed.
+
+[NOTE,caption={task-caption}]
+====
+Update `UncoverSquareCommand` so that all buttons are disabled when the game is over.
+====

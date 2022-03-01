@@ -1,0 +1,224 @@
+== Creating a Grid
+
+During development, our first goal should be to produce visible results.
+The sooner we can see that our code works, the better.
+We do not want to have to first write dozens of lines of codes before being able to check their correctness.
+
+In the case of Minesweeper, a logical first step would be to visualize the board.
+Unfortunately, this is also the most difficult step of the project.
+However, this should not be a problem: this allows this guide to start off with giving you detailed information to help you get past this first obstacle.
+The guide will then become less and less detailed as you progress.
+
+=== ItemsControl
+
+The game board is a grid with dimensions W &times; H (W columns, H rows).
+Our goal is to visualize this as H rows of W buttons, each button corresponding to one square in the grid.
+
+The easiest way to achieve this is to rely on ``ItemsControl``s.
+An `ItemsControl` is a control that allows us to easily visualize lists, where we can specify how each item of the list should be visualized.
+Since a grid is essentially a list of lists, we can use similarly nested ``ItemsControl``s to produce a visual grid.
+
+* The top level `ItemsControl` receives a list of H rows.
+* We need to tell this top level `ItemsControl` how to render these rows.
+  We do this by having it create a new `ItemsControl` for each row.
+* Each of these second level ``ItemsControl``s receives a list of W squares.
+
+Let's build towards this structure step by step.
+We start off by using an `ItemsControl` in the simplest possible way.
+
+[NOTE,caption={task-caption}]
+====
+* In `MainWindow.xaml`, add an `ItemsControl` inside the `Grid.
+* Give it a name using the `x:Name` property, e.g., `boardView`.
+* In `MainWindow.xaml.cs`, in ``MainWindow``'s constructor after `InitializeComponent()`, create a `List<string>` with some strings in it:
++
+[source,csharp]
+----
+var items = new List<string> { "a", "b", "c", "d", "e" };
+----
+* Assign this list to `boardView.ItemsSource`. This tells the `ItemsControl` which values it should show.
+* Run the project (F5).
+
+A window should appear showing the five strings one below the other.
+====
+
+=== ItemTemplate
+
+Right now, the `ItemsControl` uses the default way to render the elements in its `ItemsSource`: it draws them as simple strings.
+We would like to turn this into five buttons whose captions are these strings.
+For this, we need to make use of the ``ItemsControl``'s `ItemTemplate` property.
+
+[NOTE,caption={task-caption}]
+====
+* In `MainWindow.xaml`, set the `ItemTemplate` property as follows:
++
+[source,diff]
+----
+  <ItemsControl x:Name="boardView">
++     <ItemsControl.ItemTemplate>
++         <DataTemplate>
++
++         </DataTemplate>
++     </ItemsControl.ItemTemplate>
+  </ItemsControl>
+----
+* The `DataTemplate` represents how each element must be rendered.
+  Place a `Button` in here.
++
+[source,diff]
+----
+  <ItemsControl x:Name="boardView">
+      <ItemsControl.ItemTemplate>
+          <DataTemplate>
++             <Button />
+          </DataTemplate>
+      </ItemsControl.ItemTemplate>
+  </ItemsControl>
+----
+* Run the code (F5).
+
+A window with five very narrow buttons should appear.
+====
+
+The buttons' small height is due to the fact that we have not given them a label.
+Let's rectify this:
+
+[NOTE,caption={task-caption}]
+====
+* Give the `Button` a caption. Let's keep it simple for now and use `Click me`.
++
+[source,diff]
+----
+  <ItemsControl x:Name="boardView">
+      <ItemsControl.ItemTemplate>
+          <DataTemplate>
+-              <Button />
++              <Button Content="Click me" />
+          </DataTemplate>
+      </ItemsControl.ItemTemplate>
+  </ItemsControl>
+----
+* Run your code (F5).
+
+You should see five buttons, each labeled `Click me`.
+====
+
+Next, instead of labeling each button `Click me`, we want them to show the strings in the `ItemsSource`.
+
+The `ItemsControl` instantiates the `ItemTemplate` for each of the elements in `ItemsSource`, in our case a `Button`.
+It also sets the `DataContext` of each of these ``Button``s: the first `Button` will have `"a"` as `DataContext`, the second `"b"`, and so on.
+In other words, each `Button` can rely on its `DataContext` to know which element it corresponds to.
+
+[NOTE,caption={task-caption}]
+====
+Update the `Button`'s `Content` so that it shows the value of its `DataContext.
+
+[source,diff]
+----
+  <ItemsControl x:Name="boardView">
+      <ItemsControl.ItemTemplate>
+          <DataTemplate>
+-              <Button Content="Click me" />
++              <Button Content="{Binding .}" />
+          </DataTemplate>
+      </ItemsControl.ItemTemplate>
+  </ItemsControl>
+----
+
+Here, `{Binding .}` means "use the `DataContext` itself".
+
+Run your code. You should see five buttons, labeled `a`, `b`, `c`, `d` and `e`.
+====
+
+=== ItemsPanel
+
+The buttons are laid out vertically.
+In order to render the rows, we need them to be arranged horizontally instead.
+Lucky for us, the `ItemsControl` has a property `ItemsPanel` which determines how the buttons will be positioned.
+
+[NOTE,caption={task-caption}]
+====
+[source,diff]
+----
+  <ItemsControl x:Name="boardView">
+      <ItemsControl.ItemTemplate>
+          <DataTemplate>
+              <Button Content="{Binding .}" />
+          </DataTemplate>
+      </ItemsControl.ItemTemplate>
++     <ItemsControl.ItemsPanel>
++         <ItemsPanelTemplate>
++             <StackPanel Orientation="Horizontal" />
++         </ItemsPanelTemplate>
++     </ItemsControl.ItemsPanel>
+  </ItemsControl>
+----
+
+By default the `ItemsControl` uses a `StackPanel` with `Orientation="Vertical"`.
+The above code changes this to a `StackPanel` with `Orientation="Horizontal"`.
+
+Run your code.
+The buttons should now be arranged horizontally instead of vertically.
+====
+
+=== Going 2D
+
+We now have all ingredients to be able to show a grid.
+
+[NOTE,caption={task-caption}]
+====
+Start with creating grid data in ``MainWindow``'s constructor in `MainWindow.xaml.cs`.
+
+[source,csharp]
+----
+var row1 = new List<string> { "a", "b", "c", "d", "e" };
+var row2 = new List<string> { "e", "f", "g", "h", "i" };
+var row3 = new List<string> { "j", "k", "l", "m", "n" };
+var grid = new List<List<string>> { row1, row2, row3 };
+
+this.boardView.ItemsSource = grid;
+----
+
+If you run your code, you should see three horizontally arranged buttons.
+Each `Button` has a `List<string>` as `DataContext`, which is also uses as `Content`.
+Since WPF does not know how to render these, it decides to improvise.
+====
+
+Now comes the tricky part: we need to visualize this grid.
+
+[NOTE,caption={task-caption}]
+====
+* Go to `MainWindow.xaml`.
+* Put your current `ItemsControl` in comments, so that you can reuse parts of it.
+* Add code that creates a fresh `ItemsControl`.
+  This will be the top level `ItemsControl` that's in charge of visualizing all rows.
+  Remember that its `ItemsSource` is set to `grid`, i.e., a `List<List<string>>`.
+* This top level `ItemsControl` should lay out its children *vertically*. Since this is the default, you do not need to specify a new `ItemsPanel`.
+* Next, add code that sets its `ItemTemplate`.
+* Inside this `ItemTemplate`, again create an `ItemsControl`. This one will be responsible to render a single row.
+* Have this inner `ItemsPanel` arrange its items *horizontally*.
+* Have its `ItemTemplate` be a `Button`.
+* For now, set this ``Button``'s `Content` to simply `x`.
+* Lastly, we must set the inner ``ItemControl``'s `ItemsSource`, which we want to be bound to a single row.
+  We know that the outer `ItemsControl` has set its `DataContext` to a row, i.e., a `List<string>`, so the binding simply has to take over the ``DataContext``'s value.
+
+Run your code.
+You should see a 3 rows of 5 buttons, all labeled `x`.
+====
+
+Instead of having every `Button` show `x`, we want them to show their corresponding letter.
+
+[NOTE,caption={task-caption}]
+====
+Adjust the ``Button``'s `Content` so that it shows the correct letter instead of `x`.
+Think of what each ``Button``'s `DataContext` is set to.
+Remember that there are ways to find out what its value is if you're in doubt.
+====
+
+Each button has a different size, due to the letters having varying sizes.
+For Minesweeper, it'd be easier to play if each button had the same size.
+
+[NOTE,caption={task-caption}]
+====
+Set the ``Button``'s `Width` and `Height` to `32`.
+====

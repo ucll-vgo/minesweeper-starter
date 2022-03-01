@@ -1,0 +1,141 @@
+== Uncovering Squares
+
+=== UncoverSquareCommand
+
+We would like to be able to uncover squares on the game board by clicking on the corresponding button.
+This can be achieved by adding a command to the `SquareViewModel`.
+As always, we start small.
+
+[NOTE,caption={task-caption}]
+====
+In the ViewModel, define a `UncoverSquareCommand` class that implements `ICommand`.
+
+* Have the `Execute` method print a debug message.
++
+[source,csharp]
+----
+Debug.WriteLine("You clicked me");
+----
+* `CanExecute` can for now always return `true`.
+
+In `SquareViewModel`,
+
+* Add a `Uncover` property of type `ICommand`, getter only.
+* Initialize it in the constructor.
+
+In `MainWindow.xaml`, update the `Button` so that pressing it invokes `Uncover`.
+
+Run it in debug mode (kbd:[F5]).
+Whenever you click a button, `You clicked me` should appear in the output pane.
+====
+
+=== Passing Along IGame
+
+We would like to implement ``UncoverSquareCommand``'s ``Execute` method, but we run into a number of issues.
+We'll deal with each in turn.
+
+The functionality for visiting squares resides in the `Uncover` method of `IGame`.
+This means `UncoverSquareCommand` would need access to the `IGame`, but currently it only receives a measly `Square`.
+However, we know the `GameViewModel` object holds the `IGame`.
+We will have to pass it along to all intermediate ViewModel classes so that the `IGame` might reach `UncoverSquareCommand`.
+
+image::getting-started/passing-igame.svg[Static,700,align="center"]
+
+As always, let's do this step by step.
+Build and run your code after each step.
+
+[NOTE,caption={task-caption}]
+====
+Currently, `GameBoardViewModel` receives only an `IGameBoard`.
+
+* Its constructor should receive an `IGame` instead of an `IGameBoard`.
+* In the constructor, retrieve the `IGameBoard` from the `IGame`.
+
+Note that `GameBoardViewModel` does *not* need to save the `IGame` itself in a field; saving the `IGameBoard` is sufficient.
+====
+
+[NOTE,caption={task-caption}]
+====
+Have `GameBoardViewModel` pass the `IGame` along to `RowViewModel`.
+Make the necessary changes to make this possible.
+`RowViewModel` shouldn't do anything with `IGame` yet beyond accepting it as parameter in its constructor.
+====
+
+[NOTE,caption={task-caption}]
+====
+Now we have `RowViewModel` pass the `IGame` to `SquareViewModel.`
+====
+
+[NOTE,caption={task-caption}]
+====
+Finally, have `SquareViewModel` give the `IGame` to `UncoverSquareCommand`.
+Let `UncoverSquareCommand` store the `IGame` in a field.
+====
+
+=== Square Position
+
+Now that `UncoverSquareCommand` finally has access to the `IGame`, we should be able to call its `Uncover` method.
+However, there's a catch: the `Uncover` method needs to know the position of square to uncover.
+Right now, `UncoverSquareCommand` has no clue about which square on the board it is associated with.
+
+We're in the same situation as in the previous section.
+
+[NOTE,caption={task-caption}]
+====
+Build and run between each step.
+
+* Add an extra parameter `rowIndex` to ``RowViewModel``'s constructor.
+  Have `BoardViewModel` pass the row's index when it creates the ``RowViewModel``s.
+* Add an extra parameter `position` to ``SquareViewModel``'s constructor.
+  Update `RowViewModel` so that it passes along the position (both row and column) to every `SquareViewModel` it creates.
+* Add an extra parameter `position` to `UncoverSquareCommand`.
+====
+
+We'd like to make sure each `UncoverSquareCommand` receive its position correctly.
+Let's make a simple change to check this.
+
+[NOTE,caption={task-caption}]
+====
+Have `UncoverSquareCommand` print its position instead of `You clicked me`.
+
+Run the program, click on buttons and check that the right coordinates are outputted.
+====
+
+=== Cleaning Up
+
+Some cleanup is necessary.
+For example, ``SquareViewModel``s constructor currently receives three parameters:
+
+* An `IGame` object.
+* A `Vector2D`.
+* A `Square`.
+
+`Square` is redundant: given the `IGame` and `Vector2D`, the constructor can find the `Square` on its own.
+
+[source,diff]
+----
+SquareViewModel(IGame game, Vector2D position, Square square)
+{
+  // ...
+}
+
+// becomes
+
+SquareViewModel(IGame game, Vector2D position)
+{
+  var square = game.Board[position];
+  // ...
+}
+----
+
+[NOTE,caption={task-caption}]
+====
+Remove all redundant parameters from the ViewModel classes.
+====
+
+[NOTE]
+====
+You might wonder why we did all this work and didn't just pass a `Square` to `UncoverSquareCommand`.
+
+Cakepoint to the first student who can answer this question.
+====
