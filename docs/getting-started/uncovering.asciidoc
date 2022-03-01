@@ -85,14 +85,14 @@ We're in the same situation as in the previous section.
 Build and run between each step.
 
 * Add an extra parameter `rowIndex` to ``RowViewModel``'s constructor.
-  Update `BoardViewModel` to pass along the appropriate index.
+  Have `BoardViewModel` pass the row's index when it creates the ``RowViewModel``s.
 * Add an extra parameter `position` to ``SquareViewModel``'s constructor.
-  Update `RowViewModel`.
+  Update `RowViewModel` so that it passes along the position (both row and column) to every `SquareViewModel` it creates.
 * Add an extra parameter `position` to `UncoverSquareCommand`.
 ====
 
-We'd like to make sure each `UncoverSquareCommand` does indeed receive its position.
-Let's make a quick change to check this.
+We'd like to make sure each `UncoverSquareCommand` receive its position correctly.
+Let's make a simple change to check this.
 
 [NOTE,caption={task-caption}]
 ====
