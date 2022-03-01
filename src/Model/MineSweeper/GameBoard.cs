@@ -96,7 +96,7 @@ namespace Model.MineSweeper
             set => _board[position] = value;
         }
 
-        public GameBoard Copy() => new GameBoard(_board.Copy());
+        public GameBoard Copy() => new GameBoard(_board.Copy(s => new Square(s)));
 
         public int Width => _board.Width;
 

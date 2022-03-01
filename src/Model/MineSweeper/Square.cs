@@ -36,10 +36,18 @@
 
         internal Square(bool containsMine, int neighboringMineCount)
         {
-            ContainsMine = containsMine;
-            IsCovered = true;
-            IsFlagged = false;
-            NeighboringMineCount = neighboringMineCount;
+            this.ContainsMine = containsMine;
+            this.IsCovered = true;
+            this.IsFlagged = false;
+            this.NeighboringMineCount = neighboringMineCount;
+        }
+
+        internal Square(Square square)
+        {
+            this.ContainsMine = square.ContainsMine;
+            this.IsCovered = square.IsCovered;
+            this.IsFlagged = square.IsFlagged;
+            this.NeighboringMineCount = square.NeighboringMineCount;
         }
 
         internal void Uncover()

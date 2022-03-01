@@ -35,7 +35,7 @@ namespace Model.Data
 
         public int Height => _grid.GetLength(0);
 
-        public Grid<T> Copy() => new Grid<T>(Width, Height, p => this[p]);
+        public Grid<T> Copy(Func<T, T> copier) => new Grid<T>(Width, Height, p => copier(this[p]));
 
         public bool IsValidPosition(Vector2D position) =>
             0 <= position.X && position.X < Width && 0 <= position.Y && position.Y < Height;
