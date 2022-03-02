@@ -20,7 +20,7 @@ namespace Model.Data
                     _grid[y, x] = initializer(new Vector2D(x, y));
         }
 
-        public Grid(int width, int height, T initial = default) : this(width, height, _ => initial)
+        public Grid(int width, int height, T initial) : this(width, height, _ => initial)
         {
             // NOP
         }
