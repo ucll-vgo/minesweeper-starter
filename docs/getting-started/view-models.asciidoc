@@ -1,0 +1,185 @@
+== Introducing ViewModels
+
+As of yet, we have only written code in the View.
+It is time we clean up our design and refactor a bit by moving things to the ViewModel layer.
+
+ViewModel objects generally act as ``DataContext``s for GUI controls: they contain all information the control needs.
+The goal of this approach is to build a layered structure:
+
+* The ViewModel objects "passively" offers information through properties.
+* The View will fetch this ViewModel data through bindings.
+
+At no times should the ViewModel know anything about what exists on the View layer.
+
+[IMPORTANT]
+====
+The ViewModel must remain 100% independent from the View.
+For this project, we do not even be aware that we are using WPF as library.
+Any violation of this constraint will cause you to get a failing grade.
+====
+
+=== Unnaming the ItemsControl
+
+The top level `ItemsControl` currently has a name: its `x:Name` property is set in the XAML code.
+We needed this to be able to initialize its `ItemsSource` in the `MainWindow` constructor:
+
+[source,csharp,highlight=10]
+----
+public MainWindow()
+{
+    InitializeComponent();
+
+    var game = IGame.Create(5, true);
+
+    game = game.UncoverSquare(new Vector2D(0, 0));
+    game = game.UncoverSquare(new Vector2D(1, 0));
+
+    this.boardView.ItemsSource = Rows(game.Board);
+}
+----
+
+This approach is not ideal: it stands in our way of introducing ViewModels.
+Instead, we would prefer that the control fetches its `ItemsSource` from its `DataContext` instead of us setting it explicitly in the code-behind.
+Fortunately, this is easy to fix.
+
+[NOTE,caption={task-caption}]
+====
+Instead of assigning the row data to ``boardView``'s `ItemsSource`, assign it to the ``MainWindow``'s `DataContext`.
+The `ItemsControl` will then inherit its `DataContext` from `MainWindow`.
+
+In the XAML file, remove the ``ItemsControl``'s name. Use a binding to set its `ItemsSource` to its `DataContext`.
+
+Run the code to check that everything still works.
+====
+
+=== GameViewModel
+
+As explained earlier, ``DataContext``s should be set to ViewModel objects.
+Let's see what ``DataContext``s we have.
+
+* The top level ``ItemsControl``'s `DataContext` is set to the grid data, i.e., an `IEnumerable<IEnumerable<Square>>`.
+* The inner ``ItemsControl``s each receive an `IEnumerable<Square>` as `DataContext`.
+* Each button has a single `Square` as `DataContext`.
+
+Let's wrap each of these in ViewModel objects, one at a time, starting with the top level `ItemsControl`.
+Our current situation is
+
+image::getting-started/itemscontrol-directbinding.svg[Static,400,align="center"]
+
+Our goal is to reorganize this as follows:
+
+image::getting-started/itemscontrol-gamevm.svg[Static,600,align="center"]
+
+[NOTE,caption={task-caption}]
+====
+In The ViewModel, introduce a class `GameViewModel`.
+We intend this class to contain all game related data.
+For now, we will simply have it expose the board so that the View can render its grid of buttons.
+
+* Have the constructor accept an `IGame` object and have it stored in a private readonly field.
+* The top level `ItemsControl` needs something to bind its `ItemsSource` on, so introduce a public `Rows` property.
+  It must have type `IEnumerable<IEnumerable<Square>>`.
+  It should be only gettable, not settable.
+* You might want to bring along the `Row` helper method that extracts a single row from the board.
+====
+
+Now that we have defined our `GameViewModel`, let's actually use it.
+
+[NOTE,caption={task-caption}]
+====
+Update the `MainWindow` constructor as follows:
+
+* Keep the code that creates the `IGame` object and uncovers a selection of squares.
+* Create a `GameViewModel` object and initialize it with the `IGame` object.
+* Assign this `GameViewModel` object to the ``MainWindow``'s `DataContext`.
+* Remove the `Row` and `Rows` methods from the `MainWindow` class, that functionality has been moved to `GameViewModel`.
+====
+
+[NOTE,caption={task-caption}]
+====
+In the XAML file, update the ``ItemsControl``'s `ItemsSource` binding.
+It used to directly receive the rows as `DataContext`.
+Now the `DataContext` has become a `GameViewModel` and the binding will need to access its `Rows` property.
+
+As always, run the code.
+Everything should still work the same.
+====
+
+=== GameBoardViewModel
+
+Right now, we have to admit `GameViewModel` actually represents the board instead of the game itself.
+We would like to distinguish the game from its game board.
+Let's create a separate `GameBoardViewModel` class.
+
+image::getting-started/itemscontrol-gamevm-boardvm.svg[Static,700,align="center"]
+
+[NOTE,caption={task-caption}]
+====
+In the ViewModel, introduce a class `GameBoardViewModel`.
+It should wrap an `IGameBoard` object.
+
+* Add a private readonly field that holds an `IGameBoard` object.
+* The constructor should initialize it using a parameter.
+* Move the `Rows` property (and its helper methods, if any) from `GameViewModel` to `GameBoardViewModel`.
+====
+
+[NOTE,caption={task-caption}]
+====
+Update `GameViewModel`:
+
+* Introduce a public property `Board` of type `GameBoardViewModel`, getter-only.
+* Initialize this property in the constructor.
+
+[IMPORTANT]
+=====
+Do not have the `Board` getter create a new `GameBoardViewModel` each time.
+Make sure to create it only once, namely in the constructor, and have `Board` return it.
+=====
+====
+
+[NOTE,caption={task-caption}]
+====
+Lastly, in the XAML file, update the `ItemsSource` binding of the outer `ItemsControl`.
+Keep in mind that its `DataContext` is a `GameViewModel` and the binding needs to specify how to get to the information the `ItemsControl` needs.
+Know that a binding allows a chain of properties, e.g. `{Binding Foo.Bar.Qux}` digs three levels deep into the `DataContext`.
+
+Run it and check that nothing has changed.
+====
+
+=== RowViewModel
+
+Next in line is a ViewModel representing a board row.
+
+[NOTE,caption={task-caption}]
+====
+* Introduce a class `RowViewModel`.
+  It should wrap an `IEnumerable<Square>` object, which it should expose using a property named `Squares`.
+* Update the `Rows` property of `GameBoardViewModel`: instead of returning `IEnumerable<IEnumerable<Square>>`, it should return a `IEnumerable<RowViewModel>`.
+* Update the bindings of the inner ``ItemsControl``s in the XAML file.
+  Their `DataContext` has now changed from `IEnumerable<Square>` to `RowViewModel`, so binding on the `DataContext` itself won't work anymore.
+
+Run it and check that nothing has changed.
+====
+
+image::getting-started/itemscontrol-rowvm.svg[Static,700,align="center"]
+
+=== SquareViewModel
+
+Lastly, we want a ViewModel object for each square of the grid.
+We will call this `SquareViewModel`.
+
+image::getting-started/itemscontrol-squarevm.svg[Static,700,align="center"]
+
+[NOTE,caption={task-caption}]
+====
+Introduce a class `SquareViewModel` and update the code so as to make use of it.
+
+* `SquareViewModel` should wrap a `Square` object.
+* It should expose the data needed by the View.
+* `RowViewModel` should return an `IEnumerable<SquareViewModel>` instead of an `IEnumerable<Square>`.
+* Update the bindings for ``Button``'s content.
+
+Run it and check that nothing has changed.
+====
+
+We're finally done with refactoring and can again start adding new functionality.

@@ -2,14 +2,6 @@ digraph G {
     node [shape=none,fontname=Consolas,margin="0.3,0.1"]
     rankdir=LR
 
-    ItemsControl [
-      label =<<TABLE BORDER="2" CELLBORDER="0" CELLSPACING="1" CELLPADDING="5">
-                      <TR><TD PORT="header"><B><U>ItemsControl</U></B></TD></TR>
-                      <TR><TD PORT="DataContext">DataContext</TD></TR>
-                      <TR><TD PORT="ItemsSource">ItemsSource</TD></TR>
-                  </TABLE>>
-    ]
-
     GameVM [
       label =<<TABLE BORDER="2" CELLBORDER="0" CELLSPACING="1" CELLPADDING="5">
                       <TR><TD PORT="header"><B><U>GameViewModel</U></B></TD></TR>
@@ -33,18 +25,20 @@ digraph G {
 
     SquareVM [
         label =<<TABLE BORDER="2" CELLBORDER="0" CELLSPACING="1" CELLPADDING="5">
-                      <TR><TD PORT="header"><B><U>GameBoardSquareViewModel</U></B></TD></TR>
+                      <TR><TD PORT="header"><B><U>SquareViewModel</U></B></TD></TR>
                       <TR><TD PORT="Square">Square</TD></TR>
+                      <TR><TD PORT="Uncover">Uncover</TD></TR>
                   </TABLE>>
     ]
 
-    Data [label="Square",shape=box]
+    Uncover [
+        label =<<TABLE BORDER="2" CELLBORDER="0" CELLSPACING="1" CELLPADDING="5">
+                      <TR><TD PORT="header"><B><U>UncoverSquareCommand</U></B></TD></TR>
+                  </TABLE>>
+    ]
 
-
-    ItemsControl:DataContext -> GameVM:header
-    ItemsControl:ItemsSource -> GameVM:Board
-    GameVM:Board -> BoardVM:header
-    BoardVM:Rows -> RowVM:header [headlabel="*",labeldistance=1.5]
-    RowVM:Squares -> SquareVM:header [headlabel="*",labeldistance=1.5]
-    SquareVM:Owner -> Data
+    GameVM:Board -> BoardVM:header [label="IGame"]
+    BoardVM:Rows -> RowVM:header [headlabel="*",labeldistance=1.5,label="IGame"]
+    RowVM:Squares -> SquareVM:header [headlabel="*",labeldistance=1.5,label="IGame"]
+    SquareVM:Uncover -> Uncover:header [label="IGame"]
 }

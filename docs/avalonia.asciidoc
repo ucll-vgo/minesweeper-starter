@@ -30,7 +30,7 @@ public void ButtonPressed(object sender, PointerPressedEventArgs e)
 {
 	if (sender is Button button && e.GetCurrentPoint(this).Properties.IsRightButtonPressed)
 	{
-		if (button.DataContext is GameBoardSquareViewModel context)
+		if (button.DataContext is SquareViewModel context)
 		{
 			if (context.FlagSquare.CanExecute(sender))
 				context.FlagSquare.Execute(sender);

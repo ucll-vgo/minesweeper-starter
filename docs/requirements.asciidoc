@@ -16,6 +16,12 @@
 This is still work in progress.
 ====
 
+[IMPORTANT]
+====
+Do not add large binary files to your repository!
+Keep images and sounds minimal, max. 200kiB per student in total.
+====
+
 == Minimal Requirements
 
 Failure to meet these requirements will inevitably lead to a failing grade.
@@ -34,16 +40,22 @@ Failure to meet these requirements will inevitably lead to a failing grade.
 . Play Screen
 .. Ability to uncover squares
 .. Ability to flag and unflag covered squares
-.. Only covered squares are interactable
-.. Uncovered squares show amount of adjacent bombs
-.. Uncovered squares with no adjacent bombs are blank
+.. Only covered squares can be interacted with
+.. Visualization of squares
+... Uncovered mine-free squares show the amount of adjacent mines
+... Uncovered squares with no adjacent bombs are blank
+... Uncovered squares with mines should show a picture of a bomb
+... Flagged squares should show a picture of a flag
 .. Detection of game over
 .. Show bombs when game over
 .. Possibility of starting new game after game over
 . Decent GUI
 .. Game board <<#viewbox,fills>> the window
 .. Game board is centered
+. ``ValueConverter``s must be parameterized
+. No reliance on any `ToString()` method
 . At least 3 <<#extensions,extensions>>
+. V binds only on VM objects
 . It must work using Visual Studio.
   Realize that Rider does _not_ seem to produce VS-compatible projects.
 
@@ -57,8 +69,13 @@ Failure to meet these requirements will inevitably lead to a failing grade.
 . The VM/M must not make *any* View-related decisions.
 .. No brushes/colors/... are allowed in the VM. Colors should simply not exist in the VM (except of course if colors are inherent to the domain, but this is not the case for Minesweeper.)
 .. The VM must not contain strings that are shown in the V. Use enums instead.
-. <<#external-files,No hard coded absolute paths>>
+. <<#absolute-paths,No hard coded absolute paths>>
 . No external libraries
+. Clean code
+.. No big chunks in comments (rely on Git instead)
+.. Indentation
+.. Follow C# naming conventions
+.. Reasonable vertical whitespace, e.g., don't put 5 blank lines between two statements.
 
 [WARNING]
 ====
@@ -80,16 +97,26 @@ You might want to reconsider your approach.
 If an extension is implemented wrong, it will not be counted.
 We suggest to make some extra extensions as a safety measure.
 
-* In Play Screen, when mouse hovers over square, <<#disabled-buttons,it lights up>>. Note: the default highlight of ``Button``s does not count! Either change the highlight color or use something different than ``Button``s). This extension requires some code to be written.
-* After losing, highlight bombs and pressed bomb
-* Different color depending of amount of bombs adjacent
+* In Play Screen, when mouse hovers over square, <<#disabled-buttons,it lights up>>.
+  Note: the default highlight of ``Button``s does not count! Either change the highlight color or use something different than ``Button``s).
+  This extension requires some code to be written.
+* After losing, show _all_ mines and highlight the last uncovered square (which contained a mine)
+* Replay: after the game is over, allow the player to view a replay of his moves.
+* Different font color depending of amount of neighboring mines
 * Choice between <<#themes,themes>> (e.g. dark and light theme)
 * <<#animation,Animation>> (NOT gifs, but WPF animations)
 * Timer
 * Let players choose colors in settings screen
 * User Defined WPF Control for squares
-* Highscore board
+* High score board
 * Hint button
+* Improved visualization of squares
+** Implemented using `ContentControl`, ``DataTemplate``s and ``DataTrigger``s.
+** Uncovered mine-free squares show the amount of adjacent mines
+** Uncovered squares with no adjacent mines are blank
+** Uncovered squares with mines should show a picture of a mine
+** Flagged squares should show a picture of a flag
+* Have the first uncovered square never contain a mine
 
 == Extra Information
 
@@ -128,13 +155,13 @@ It is of utmost importance that you get these right.
 ** Framework Project: .NET Core
 ** Project dependencies: none
 
-[#external-files]
-=== External Files
+[#absolute-paths]
+=== No Hardcoded Paths
 
 Your project should run without issues on other machines.
-Do not use any hardcoded absolute paths, since these will only work on _your_ machine.
+Do not use any hardcoded absolute paths (e.g., images), since these will only work on _your_ machine.
 
-==== Separate Files
+==== Referring to Resources
 
 If you wish to refer to external files, you should use relative paths.
 

@@ -1,0 +1,33 @@
+== Setting Up Visual Studio
+
+[NOTE,caption={task-caption}]
+====
+* Open the Minesweeper solution in Visual Studio by opening the solution file `Minesweeper.sln`.
+* Add a new "Class Library" (be sure to pick the one that targets .NET Core) to the solution (in the Solution Explorer, right click on the solution at the root of the tree, choose Add &rarr; New Project). Name this project `ViewModel`.
+* Add a new "WPF Application" (again the one targeting .NET Core) to the solution. Name it `View`.
+* In the Solution Explorer, right click on `View` and select Set as Startup Project.
+====
+
+If you press F5 (= run in debug mode), you should be greeted with an empty window.
+Next, let's tell these freshly created projects which other projects they can depend upon.
+
+[NOTE,caption={task-caption}]
+====
+* In the Solution Explorer, right click on Dependencies under ViewModel, pick add Project Dependencies and select Cells and Model. Definitely do *not* select View.
+* Add ViewModel as a dependency for View. This way, View will automatically "inherit" the ViewModel's dependencies (i.e., Cells and Model) and will be able to make use of those.
+====
+
+This leads to the following dependency structure:
+
+[.center,cols="^,^,^",width="40%"]
+|===
+3+| View
+2+| ViewModel | WPF
+| Model | Cell |
+|===
+
+where projects can only depend on things *below* them.
+In other words:
+
+* The ViewModel must be independent of WPF and the View.
+* There are no restrictions imposed on the View: it sees all.

@@ -1,6 +1,7 @@
 digraph G {
     node [shape=none,fontname=Consolas,margin="0.3,0.1"]
     rankdir=LR
+    splines="ortho"
 
     ItemsControl [
       label =<<TABLE BORDER="2" CELLBORDER="0" CELLSPACING="1" CELLPADDING="5">
@@ -26,9 +27,8 @@ digraph G {
 
     Data [label="IEnumerable\<IEnumerable\<Square\>\>",shape=box]
 
-
-    ItemsControl:DataContext -> GameVM:header
-    ItemsControl:ItemsSource -> GameVM:Board
+    ItemsControl:DataContext -> GameViewModel:header
+    ItemsControl:ItemsSource -> BoardViewModel:Rows
     GameViewModel:Board -> BoardViewModel:header
     BoardViewModel:Rows -> Data
 }

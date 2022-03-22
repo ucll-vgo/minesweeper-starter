@@ -7,7 +7,7 @@ namespace Cells
     {
         public abstract T Value { get; set; }
 
-        public event PropertyChangedEventHandler PropertyChanged;
+        public event PropertyChangedEventHandler? PropertyChanged;
 
         public event Action ValueChanged
         {

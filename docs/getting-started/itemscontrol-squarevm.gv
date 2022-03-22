@@ -1,0 +1,50 @@
+digraph G {
+    node [shape=none,fontname=Consolas,margin="0.3,0.1"]
+    rankdir=LR
+
+    ItemsControl [
+      label =<<TABLE BORDER="2" CELLBORDER="0" CELLSPACING="1" CELLPADDING="5">
+                      <TR><TD PORT="header"><B><U>ItemsControl</U></B></TD></TR>
+                      <TR><TD PORT="DataContext">DataContext</TD></TR>
+                      <TR><TD PORT="ItemsSource">ItemsSource</TD></TR>
+                  </TABLE>>
+    ]
+
+    GameVM [
+      label =<<TABLE BORDER="2" CELLBORDER="0" CELLSPACING="1" CELLPADDING="5">
+                      <TR><TD PORT="header"><B><U>GameViewModel</U></B></TD></TR>
+                      <TR><TD PORT="Board">Board</TD></TR>
+                  </TABLE>>
+    ]
+
+    BoardVM [
+      label =<<TABLE BORDER="2" CELLBORDER="0" CELLSPACING="1" CELLPADDING="5">
+                      <TR><TD PORT="header"><B><U>GameBoardViewModel</U></B></TD></TR>
+                      <TR><TD PORT="Rows">Rows</TD></TR>
+                  </TABLE>>
+    ]
+
+    RowVM [
+        label =<<TABLE BORDER="2" CELLBORDER="0" CELLSPACING="1" CELLPADDING="5">
+                      <TR><TD PORT="header"><B><U>GameBoardRowViewModel</U></B></TD></TR>
+                      <TR><TD PORT="Squares">Squares</TD></TR>
+                  </TABLE>>
+    ]
+
+    SquareVM [
+        label =<<TABLE BORDER="2" CELLBORDER="0" CELLSPACING="1" CELLPADDING="5">
+                      <TR><TD PORT="header"><B><U>SquareViewModel</U></B></TD></TR>
+                      <TR><TD PORT="Square">Square</TD></TR>
+                  </TABLE>>
+    ]
+
+    Data [label="Square",shape=box]
+
+
+    ItemsControl:DataContext -> GameVM:header
+    ItemsControl:ItemsSource -> GameVM:Board
+    GameVM:Board -> BoardVM:header
+    BoardVM:Rows -> RowVM:header [headlabel="*",labeldistance=1.5]
+    RowVM:Squares -> SquareVM:header [headlabel="*",labeldistance=1.5]
+    SquareVM:Square -> Data
+}

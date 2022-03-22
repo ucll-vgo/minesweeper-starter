@@ -1,0 +1,128 @@
+== IGame
+
+Currently, we have defined our own grid data.
+In this section, we will start relying on domain classes.
+Let's explore these for a bit.
+
+A game is represented by an object implementing the `IGame` interface.
+This interface contains all Minesweeper-related functionality.
+
+=== Creation
+
+To create a game, `IGame` offers two static factory methods.
+
+==== CreateRandom
+
+This factory method allows you to create a new game with a randomized minefield.
+
+[source,csharp]
+----
+public static IGame CreateRandom(int boardSize, double mineProbability, bool flooding = true, int? seed = null);
+----
+
+where
+
+* `boardSize` is an `int` representing the size (used as both width and height) of the board.
+* `mineProbability` is a `double` between `0` and `1` representing the probability that a square contains a mine.
+* `flooding` is a `bool` determining whether or not flooding is enabled.
+* `seed` is an `int` that deterministically generates the board.
+
+[NOTE,caption='Example']
+====
+[source,csharp]
+----
+// Create game with a 10x10 board where 10% of the squares contain a bomb.
+// Flooding is enabled.
+var game = IGame.CreateRandom(10, 0.1);
+
+// Using the same seed generates exactly the same board
+var game1 = IGame.Create(10, 0.1, seed: 4516);
+var game2 = IGame.Create(10, 0.1, seed: 4516);
+----
+====
+
+==== Parse
+
+This factory method allows you to specify where the bombs are located.
+The purpose of this method is to make development and debugging easier.
+
+[source,csharp]
+----
+public static IGame Parse( IEnumerable<string> rows, bool flooding = true );
+----
+
+[NOTE,caption='Example']
+====
+[source,csharp]
+----
+var game = IGame.Parse(new List<string> {
+  ".....",
+  ".*...",
+  ".....",
+  "...*.",
+  "**...",
+});
+----
+====
+
+=== Board
+
+Right now, we are interested in the board.
+We can access this using the `Board` property:
+
+[source,csharp]
+----
+var board = game.Board;
+----
+
+It should not come as a surprise that this `board` contains all information related to the game board.
+
+[source,csharp]
+----
+// Querying width
+var width = board.Width;
+
+// Querying height
+var height = board.Height;
+
+// Querying square at position (0, 0)
+var position = new Vector2D(0, 0);
+var square = board[position];
+
+// Printing out board (meant for debugging)
+Debug.WriteLine(game.Board.ToString());
+----
+
+=== Use as ItemsSource
+
+In order for our `ItemsControl` construction to be able to work with this board, we need to restructure the data as a list of lists.
+
+[NOTE,caption={task-caption}]
+====
+In `MainWindow.xaml.cs`, add the following methods to the `MainWindow` class:
+
+* Write a method `IEnumerable<Square> Row(IGameBoard board, int row)` that returns a `List<Square>` containing all squares on the ``row``th row of `board`.
+* Write a method `IEnumerable<IEnumerable<Square>> Rows(IGameBoard board)` that calls `Row` for every row on `board` and returns the results as a list.
+  In other words, this method returns a list of the rows of `board`.
+* In the `MainWindow` constructor:
+** Get rid of the old `List<List<string>>` related code.
+** Create an `IGame` use the `Parse` factory function.
+   Create a minefield of your choice.
+** Use `Rows` to turn the ``IGame``'s `Board` into a `IEnumerable<IEnumerable<Square>>`.
+** Use this last result as the outer ``ItemsControl``'s `ItemsSource`.
+
+Run your code.
+You should see W&times;H buttons with question marks where W and H correspond to the width and height of the minefield you created.
+====
+
+Each `Button` is asked to show a `Square`.
+WPF does not know about ``Square``s, so it will call the `ToString` method and show whatever it returns.
+A square can be in the following states:
+
+* A `Square` can be covered, represented by `?`. This is its initial state.
+* A `Square` can be flagged as a mine. This is represented by `F`.
+* A `Square` can be uncovered and contain a mine. This is represented by `M`.
+* A `Square` can be uncovered and not contain a mine, in which case `ToString()` returns a single-digit string representing the number of mines in the neighborhood.
+
+Since all squares are still in their initial covered state, you get to see question marks everywhere.
+Let's tell WPF how to better visualize a ``Square``'s state.
