@@ -112,7 +112,7 @@ For example, ``SquareViewModel``s constructor currently receives three parameter
 
 `Square` is redundant: given the `IGame` and `Vector2D`, the constructor can find the `Square` on its own.
 
-[source,diff]
+[source,csharp]
 ----
 SquareViewModel(IGame game, Vector2D position, Square square)
 {
