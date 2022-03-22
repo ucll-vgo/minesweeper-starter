@@ -54,10 +54,10 @@ Failure to meet these requirements will inevitably lead to a failing grade.
 .. Game board is centered
 . ``ValueConverter``s must be parameterized
 . No reliance on any `ToString()` method
-. At least 3 <<#extensions,extensions>>
 . V binds only on VM objects
 . It must work using Visual Studio.
   Realize that Rider does _not_ seem to produce VS-compatible projects.
+. At least 3 <<#extensions,extensions>>
 
 === Implementation Requirements
 
