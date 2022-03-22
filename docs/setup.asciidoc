@@ -11,8 +11,10 @@
 
 # Setup Instructions
 
-On Toledo, a link should be provided to GitHub Classroom. Go there and accept the assignment. This will create your private fork (= copy) of this repository.
-You will be given the URL to this fork, which you can use to clone the forked repository to your laptop:
+On Toledo, a link should be provided to GitHub Classroom.
+Go there and accept the assignment.
+This will create a brand new repository just for you.
+You can clone this repository to your laptop:
 
 [source,bash]
 ----
@@ -21,7 +23,9 @@ $ git clone URL minesweeper
 ----
 
 where `URL` is replaced by the URL of your fork.
-This will create a directory `minesweeper` and download the repository to that location.
+This will create a directory `minesweeper` and create a new repository there.
+This repository will be empty: this is perfectly normal.
+You will import starter code in a later step.
 
 [IMPORTANT]
 ====
@@ -31,9 +35,9 @@ This is a safety measure against technical mishaps.
 If you were to lose your hard work and have failed to push your code frequently, expect no compassion from us.
 ====
 
-## Receiving Updates
+## Getting the Starter Code
 
-In order to receive updates, you need to link your repository to my original repository.
+In order to get the starter code and to be able to receive future updates, you need to link your repository to my original repository.
 Inside your local repository (i.e., inside the `minesweeper` directory):
 
 [source,bash]
@@ -42,16 +46,17 @@ Inside your local repository (i.e., inside the `minesweeper` directory):
 $ git remote add upstream https://github.com/ucll-vgo/minesweeper-starter
 ----
 
-New updates can now be retrieved using
+Pull in the starter code using the command below:
 
 [source,bash]
 ----
-# Needs to happen for each update
 $ git pull upstream master
 ----
+
+Note that this same command also allows you to pull in updates.
 
 [IMPORTANT]
 ====
 It is your responsibility to download updates as they become available.
-You can ask GitHub to notify you whenever an update is made to the repository using the watch functionality (top right corner) provided on the https://github.com/ucll-vgo/gomoku-starter[repository's website].
+You can ask GitHub to notify you whenever an update is made to the repository using the watch functionality (top right corner) provided on the https://github.com/ucll-vgo/minesweeper-starter[repository's website].
 ====
