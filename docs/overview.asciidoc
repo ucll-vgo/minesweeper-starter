@@ -15,7 +15,7 @@
 ====
 This documentation is subject to change.
 Make sure to check for updates.
-The documentation is included in the repository, meaning you can easily when changes are made (by subscribing as a watcher) and what they are (using `git log` and `git diff`).
+The documentation is included in the repository, meaning you can easily get notified when changes are made (by subscribing as a watcher) and see what they are (using `git log` and `git diff`).
 ====
 
 For this project, you will develop a GUI for Minesweeper, a board game.
