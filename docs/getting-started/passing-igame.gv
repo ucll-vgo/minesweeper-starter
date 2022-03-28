@@ -18,7 +18,7 @@ digraph G {
 
     RowVM [
         label =<<TABLE BORDER="2" CELLBORDER="0" CELLSPACING="1" CELLPADDING="5">
-                      <TR><TD PORT="header"><B><U>GameBoardRowViewModel</U></B></TD></TR>
+                      <TR><TD PORT="header"><B><U>RowViewModel</U></B></TD></TR>
                       <TR><TD PORT="Squares">Squares</TD></TR>
                   </TABLE>>
     ]
