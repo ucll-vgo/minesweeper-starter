@@ -117,6 +117,8 @@ We suggest to make some extra extensions as a safety measure.
 ** Uncovered squares with mines should show a picture of a mine
 ** Flagged squares should show a picture of a flag
 * Have the first uncovered square never contain a mine
+* Custom mine probability
+* Quickstart (preset board sizes, such as Easy (5&times;5), Medium (10&times;10), ...)
 
 == Extra Information
 
