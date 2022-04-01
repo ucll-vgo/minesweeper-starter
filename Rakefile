@@ -94,8 +94,6 @@ end
 desc 'Uploads dist to server'
 task :upload do
     Dir.chdir 'dist' do
-        # `ssh -p 22345 -l upload leone.ucll.be rm -rf /home/frederic/courses/vgo/volume/*`
-        # puts `scp -P 22345 -r * upload@leone.ucll.be:/home/frederic/courses/vgo/volume`
         `ssh upload.leone.ucll.be rm -rf /home/frederic/courses/vgo/volume/*`
         puts `scp -r * upload.leone.ucll.be:/home/frederic/courses/vgo/volume`
     end
