@@ -36,8 +36,8 @@ where
 var game = IGame.CreateRandom(10, 0.1);
 
 // Using the same seed generates exactly the same board
-var game1 = IGame.Create(10, 0.1, seed: 4516);
-var game2 = IGame.Create(10, 0.1, seed: 4516);
+var game1 = IGame.CreateRandom(10, 0.1, seed: 4516);
+var game2 = IGame.CreateRandom(10, 0.1, seed: 4516);
 ----
 ====
 

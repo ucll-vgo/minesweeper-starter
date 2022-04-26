@@ -29,7 +29,7 @@ public MainWindow()
 {
     InitializeComponent();
 
-    var game = IGame.Create(5, true);
+    var game = IGame.CreateRandom(5, 0.1);
 
     game = game.UncoverSquare(new Vector2D(0, 0));
     game = game.UncoverSquare(new Vector2D(1, 0));
