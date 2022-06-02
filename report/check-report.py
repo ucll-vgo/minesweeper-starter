@@ -62,7 +62,7 @@ if not os.path.isfile(report_filename):
     abort(f"Failed to find {report_filename}")
 
 print(f"Opening {report_filename}...")
-with open(report_filename) as file:
+with open(report_filename, encoding='utf-8-sig') as file:
     print(f"Parsing JSON...")
     try:
         data = json.load(file)
