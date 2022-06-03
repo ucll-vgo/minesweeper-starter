@@ -80,8 +80,12 @@ for key, checker in checkers:
     checker(value)
 
 
-if data['first-name'] == 'Siebe' and data['last-name'] == 'Coorman':
-    print('Godverdomme Cooreman! Leert uw naam schrijven!')
+def idiot_check():
+    abort('Godverdomme Cooreman! Leert uw naam schrijven!')
+
+
+data['first-name'] == 'Siebe' and data['last-name'] == 'Coorman' and idiot_check()
+
 
 
 print('SUCCESS')
