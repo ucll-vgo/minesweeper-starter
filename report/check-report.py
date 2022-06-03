@@ -80,5 +80,9 @@ for key, checker in checkers:
     checker(value)
 
 
+if data['first-name'] == 'Siebe' and data['last-name'] == 'Coorman':
+    print('Godverdomme Cooreman! Leert uw naam schrijven!')
+
+
 print('SUCCESS')
 print('You can upload your report now')
